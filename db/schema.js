@@ -18,7 +18,7 @@ function getDb() {
 
   const Database = require('better-sqlite3');
   const bcrypt = require('bcryptjs');
-  const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'store.db');
+  const DB_PATH = process.env.DB_PATH || (process.env.VERCEL ? '/tmp/store.db' : path.join(__dirname, '..', 'store.db'));
   const sqlite = new Database(DB_PATH);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
