@@ -54,22 +54,6 @@ const adminRoutes = require('./routes/admin');
 app.use('/', storeRoutes);
 app.use('/admin', adminRoutes);
 
-app.use('/__diag', async (req, res) => {
-  try {
-    const db = getDb();
-    const products = await db.prepare('SELECT id, name_ar, created_at FROM products ORDER BY id DESC LIMIT 3').all();
-    res.json({
-      hasDatabaseUrl: !!process.env.DATABASE_URL,
-      databaseUrl: process.env.DATABASE_URL ? String(process.env.DATABASE_URL).replace(/:[^:@]*@/, ':***@') : null,
-      dbType: process.env.DATABASE_URL ? 'postgres' : 'sqlite',
-      productCount: (await db.prepare('SELECT COUNT(*) as c FROM products').get()).c,
-      recentProducts: products,
-    });
-  } catch (err) {
-    res.json({ error: err.message });
-  }
-});
-
 app.use((req, res) => {
   res.status(404).render('404', { title: 'الصفحة غير موجودة', title_fr: 'Page non trouvée', title_en: 'Page Not Found' });
 });
