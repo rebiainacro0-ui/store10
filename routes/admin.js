@@ -62,7 +62,7 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
     db.prepare("SELECT COUNT(*) as c FROM products WHERE stock = 0").get(),
     db.prepare("SELECT COUNT(*) as c FROM orders WHERE status = 'pending'").get(),
     db.prepare('SELECT o.*, w.name_ar as wilaya FROM orders o LEFT JOIN wilayas w ON o.wilaya_code = w.code ORDER BY o.created_at DESC LIMIT 10').all(),
-    db.prepare("SELECT p.name_ar, p.name_fr, SUM(oi.quantity) as total_sold FROM order_items oi JOIN products p ON oi.product_id = p.id GROUP BY oi.product_id ORDER BY total_sold DESC LIMIT 5").all(),
+    db.prepare("SELECT p.name_ar, p.name_fr, SUM(oi.quantity) as total_sold FROM order_items oi JOIN products p ON oi.product_id = p.id GROUP BY oi.product_id, p.name_ar, p.name_fr ORDER BY total_sold DESC LIMIT 5").all(),
   ]);
   res.render('admin/dashboard', { title: 'Dashboard',
     totalOrders: totalOrders.c, totalRevenue: totalRevenue.t, totalProducts: totalProducts.c, totalCustomers: totalCustomers.c,

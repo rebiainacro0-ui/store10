@@ -36,7 +36,7 @@ router.get('/', asyncHandler(async (req, res) => {
     db.prepare('SELECT * FROM products WHERE featured = 1 AND active = 1 ORDER BY created_at DESC LIMIT 8').all(),
     db.prepare('SELECT * FROM categories ORDER BY created_at DESC').all(),
     db.prepare("SELECT fs.*, p.* FROM flash_sales fs JOIN products p ON fs.product_id = p.id WHERE fs.active = 1 AND fs.end_date > NOW() AND fs.start_date <= NOW()").all(),
-    db.prepare("SELECT p.*, COALESCE(AVG(r.rating),0) as avg_rating, COUNT(r.id) as review_count FROM products p LEFT JOIN reviews r ON r.product_id = p.id AND r.approved = 1 WHERE p.active = 1 GROUP BY p.id ORDER BY avg_rating DESC LIMIT 4").all(),
+    db.prepare("SELECT p.*, COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.approved = 1),0) as avg_rating, (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.approved = 1) as review_count FROM products p WHERE p.active = 1 ORDER BY avg_rating DESC LIMIT 4").all(),
   ]);
   res.render('index', {
     title: t({title_ar:'الرئيسية',title_fr:'Accueil',title_en:'Home'},'title',lang),

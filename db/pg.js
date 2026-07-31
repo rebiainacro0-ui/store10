@@ -1,4 +1,7 @@
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+types.setTypeParser(1700, (v) => parseFloat(v));
+types.setTypeParser(20, (v) => parseInt(v, 10));
 
 let pool;
 
