@@ -33,16 +33,19 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use((req, res, next) => {
-  const db = getDb();
-  const settings = {};
-  const rows = db.prepare('SELECT key, value FROM settings').all();
-  rows.forEach(r => settings[r.key] = r.value);
-  res.locals.settings = settings;
-  res.locals.lang = req.session.lang || 'ar';
-  res.locals.currency = req.session.currency || 'DZD';
-  res.locals.cartCount = getCartCount(req);
-  next();
+app.use(async (req, res, next) => {
+  try {
+    const db = getDb();
+    const settings = {};
+    const rows = await db.prepare('SELECT key, value FROM settings').all();
+    if (rows && Array.isArray(rows)) rows.forEach(r => settings[r.key] = r.value);
+    res.locals.settings = settings;
+    res.locals.lang = req.session.lang || 'ar';
+    res.locals.currency = req.session.currency || 'DZD';
+    const row = await db.prepare('SELECT SUM(quantity) as count FROM cart WHERE session_id = ?').get(req.session.id);
+    res.locals.cartCount = row && row.count ? Number(row.count) : 0;
+    next();
+  } catch (err) { next(err); }
 });
 
 const storeRoutes = require('./routes/store');
@@ -54,12 +57,6 @@ app.use('/admin', adminRoutes);
 app.use((req, res) => {
   res.status(404).render('404', { title: 'الصفحة غير موجودة', title_fr: 'Page non trouvée', title_en: 'Page Not Found' });
 });
-
-function getCartCount(req) {
-  const db = getDb();
-  const row = db.prepare('SELECT SUM(quantity) as count FROM cart WHERE session_id = ?').get(req.session.id);
-  return row && row.count ? row.count : 0;
-}
 
 if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {

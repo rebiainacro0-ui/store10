@@ -11,8 +11,5 @@
       "src": "/(.*)",
       "dest": "api/index.js"
     }
-  ],
-  "env": {
-    "DB_PATH": "/tmp/store.db"
-  }
+  ]
 }

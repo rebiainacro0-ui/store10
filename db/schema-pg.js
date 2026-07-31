@@ -1,103 +1,59 @@
-const path = require('path');
+const bcrypt = require('bcryptjs');
+const { exec, getPool } = require('./pg');
 
-let db;
+async function initPgSchema() {
+  const pool = getPool();
 
-function getDb() {
-  if (db) return db;
-
-  if (process.env.DATABASE_URL) {
-    const pg = require('./pg');
-    const { initPgSchema } = require('./schema-pg');
-    db = wrapPg(pg);
-    initPgSchema().catch(err => {
-      console.error('Failed to initialize PostgreSQL schema:', err);
-      process.exit(1);
-    });
-    return db;
-  }
-
-  const Database = require('better-sqlite3');
-  const bcrypt = require('bcryptjs');
-  const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'store.db');
-  const sqlite = new Database(DB_PATH);
-  sqlite.pragma('journal_mode = WAL');
-  sqlite.pragma('foreign_keys = ON');
-  initSqliteSchema(sqlite, bcrypt);
-  db = wrapSqlite(sqlite);
-  return db;
-}
-
-function toSqliteSql(sql) {
-  return sql.replace(/NOW\(\)/gi, "datetime('now')");
-}
-
-function wrapSqlite(sqlite) {
-  return {
-    prepare(sql) {
-      const adapted = toSqliteSql(sql);
-      const stmt = sqlite.prepare(adapted);
-      return {
-        run: (...params) => Promise.resolve(stmt.run(...params)),
-        get: (...params) => Promise.resolve(stmt.get(...params)),
-        all: (...params) => Promise.resolve(stmt.all(...params)),
-      };
-    },
-    exec: (sql) => Promise.resolve(sqlite.exec(toSqliteSql(sql))),
-  };
-}
-
-function wrapPg(pg) {
-  return {
-    prepare(sql) { return pg.prepare(sql); },
-    exec: (sql) => pg.exec(sql),
-  };
-}
-
-function initSqliteSchema(db, bcrypt) {
-  db.exec(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS wilayas (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE,
+      id SERIAL PRIMARY KEY, code TEXT NOT NULL UNIQUE,
       name_ar TEXT NOT NULL, name_fr TEXT NOT NULL, name_en TEXT NOT NULL,
-      shipping_price REAL DEFAULT 0, free_shipping_min REAL DEFAULT NULL
+      shipping_price NUMERIC(12,2) DEFAULT 0, free_shipping_min NUMERIC(12,2) DEFAULT NULL
     );
     CREATE TABLE IF NOT EXISTS communes (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, wilaya_code TEXT NOT NULL,
+      id SERIAL PRIMARY KEY, wilaya_code TEXT NOT NULL,
       name_ar TEXT NOT NULL, name_fr TEXT NOT NULL, name_en TEXT NOT NULL,
+      active INTEGER DEFAULT 1,
+      shipping_price NUMERIC(12,2) DEFAULT 0,
+      free_shipping_min NUMERIC(12,2) DEFAULT NULL,
+      shipping_price_office NUMERIC(12,2) DEFAULT NULL,
       FOREIGN KEY (wilaya_code) REFERENCES wilayas(code)
     );
     CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       name_ar TEXT NOT NULL, name_fr TEXT NOT NULL, name_en TEXT NOT NULL,
       slug TEXT NOT NULL UNIQUE,
       description_ar TEXT, description_fr TEXT, description_en TEXT,
-      image_url TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      image_url TEXT, created_at TIMESTAMPTZ DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS products (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       name_ar TEXT NOT NULL, name_fr TEXT NOT NULL, name_en TEXT NOT NULL,
       slug TEXT NOT NULL UNIQUE,
       description_ar TEXT, description_fr TEXT, description_en TEXT,
       benefits_ar TEXT, benefits_fr TEXT, benefits_en TEXT,
       specifications_ar TEXT, specifications_fr TEXT, specifications_en TEXT,
       how_to_use_ar TEXT, how_to_use_fr TEXT, how_to_use_en TEXT,
-      price REAL NOT NULL, compare_price REAL, cost_price REAL,
+      price NUMERIC(12,2) NOT NULL, compare_price NUMERIC(12,2), cost_price NUMERIC(12,2),
       image_url TEXT, video_url TEXT,
       category_id INTEGER, stock INTEGER DEFAULT 0,
       featured INTEGER DEFAULT 0, active INTEGER DEFAULT 1,
+      show_shipping INTEGER DEFAULT 1, show_price INTEGER DEFAULT 1,
+      content_bottom TEXT,
       meta_title_ar TEXT, meta_title_fr TEXT, meta_title_en TEXT,
       meta_description_ar TEXT, meta_description_fr TEXT, meta_description_en TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (category_id) REFERENCES categories(id)
     );
     CREATE TABLE IF NOT EXISTS product_images (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       product_id INTEGER NOT NULL, image_url TEXT NOT NULL, sort_order INTEGER DEFAULT 0,
       FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS product_faqs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       product_id INTEGER NOT NULL,
       question_ar TEXT NOT NULL, question_fr TEXT NOT NULL, question_en TEXT NOT NULL,
       answer_ar TEXT NOT NULL, answer_fr TEXT NOT NULL, answer_en TEXT NOT NULL,
@@ -105,188 +61,172 @@ function initSqliteSchema(db, bcrypt) {
       FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
     );
     CREATE TABLE IF NOT EXISTS customers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       email TEXT, full_name TEXT NOT NULL,
       phone TEXT NOT NULL, phone2 TEXT,
       wilaya_code TEXT, commune_id INTEGER,
       delivery_address TEXT, delivery_type TEXT DEFAULT 'home',
       notes TEXT, password TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (wilaya_code) REFERENCES wilayas(code),
       FOREIGN KEY (commune_id) REFERENCES communes(id)
     );
     CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       order_number TEXT NOT NULL UNIQUE, customer_id INTEGER,
       full_name TEXT NOT NULL, phone TEXT NOT NULL, phone2 TEXT,
       wilaya_code TEXT NOT NULL, commune_id INTEGER,
       delivery_address TEXT NOT NULL, delivery_type TEXT DEFAULT 'home',
       notes TEXT, payment_method TEXT DEFAULT 'cod',
-      subtotal REAL NOT NULL, shipping REAL DEFAULT 0,
-      discount REAL DEFAULT 0, coupon_code TEXT,
-      total REAL NOT NULL, status TEXT DEFAULT 'pending',
+      subtotal NUMERIC(12,2) NOT NULL, shipping NUMERIC(12,2) DEFAULT 0,
+      discount NUMERIC(12,2) DEFAULT 0, coupon_code TEXT,
+      total NUMERIC(12,2) NOT NULL, status TEXT DEFAULT 'pending',
       delivery_company TEXT, tracking_url TEXT, admin_notes TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (customer_id) REFERENCES customers(id),
       FOREIGN KEY (wilaya_code) REFERENCES wilayas(code),
       FOREIGN KEY (commune_id) REFERENCES communes(id)
     );
     CREATE TABLE IF NOT EXISTS order_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       order_id INTEGER NOT NULL, product_id INTEGER,
       product_name_ar TEXT NOT NULL, product_name_fr TEXT NOT NULL, product_name_en TEXT NOT NULL,
-      price REAL NOT NULL, quantity INTEGER NOT NULL, total REAL NOT NULL,
+      price NUMERIC(12,2) NOT NULL, quantity INTEGER NOT NULL, total NUMERIC(12,2) NOT NULL,
       FOREIGN KEY (order_id) REFERENCES orders(id),
       FOREIGN KEY (product_id) REFERENCES products(id)
     );
     CREATE TABLE IF NOT EXISTS cart (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       session_id TEXT NOT NULL, product_id INTEGER NOT NULL,
-      quantity INTEGER NOT NULL DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      quantity INTEGER NOT NULL DEFAULT 1, created_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (product_id) REFERENCES products(id)
     );
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       username TEXT NOT NULL UNIQUE, email TEXT NOT NULL UNIQUE,
       password TEXT NOT NULL, role TEXT DEFAULT 'admin',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS reviews (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       product_id INTEGER NOT NULL, customer_name TEXT NOT NULL,
       rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
       comment TEXT, approved INTEGER DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (product_id) REFERENCES products(id)
     );
     CREATE TABLE IF NOT EXISTS coupons (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       code TEXT NOT NULL UNIQUE, type TEXT NOT NULL DEFAULT 'percentage',
-      value REAL NOT NULL, min_order REAL DEFAULT 0,
+      value NUMERIC(12,2) NOT NULL, min_order NUMERIC(12,2) DEFAULT 0,
       max_uses INTEGER, used_count INTEGER DEFAULT 0,
-      active INTEGER DEFAULT 1, expires_at DATETIME,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      active INTEGER DEFAULT 1, expires_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS flash_sales (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       product_id INTEGER NOT NULL, discount_percent INTEGER NOT NULL,
-      start_date DATETIME NOT NULL, end_date DATETIME NOT NULL,
+      start_date TIMESTAMPTZ NOT NULL, end_date TIMESTAMPTZ NOT NULL,
       max_quantity INTEGER, sold_count INTEGER DEFAULT 0,
-      active INTEGER DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      active INTEGER DEFAULT 1, created_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (product_id) REFERENCES products(id)
     );
     CREATE TABLE IF NOT EXISTS pages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       title_ar TEXT NOT NULL, title_fr TEXT NOT NULL, title_en TEXT NOT NULL,
       slug TEXT NOT NULL UNIQUE,
       content_ar TEXT, content_fr TEXT, content_en TEXT,
       meta_title TEXT, meta_description TEXT,
       published INTEGER DEFAULT 1,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS blog_posts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       title_ar TEXT NOT NULL, title_fr TEXT NOT NULL, title_en TEXT NOT NULL,
       slug TEXT NOT NULL UNIQUE,
       content_ar TEXT, content_fr TEXT, content_en TEXT,
       image_url TEXT, published INTEGER DEFAULT 1,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS order_status_history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       order_id INTEGER NOT NULL, status TEXT NOT NULL,
       note TEXT, created_by INTEGER,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (order_id) REFERENCES orders(id)
     );
+    CREATE TABLE IF NOT EXISTS product_options (
+      id SERIAL PRIMARY KEY,
+      product_id INTEGER NOT NULL, name_ar TEXT NOT NULL, name_fr TEXT NOT NULL, name_en TEXT NOT NULL,
+      type TEXT DEFAULT 'radio', required INTEGER DEFAULT 0, sort_order INTEGER DEFAULT 0,
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS product_option_values (
+      id SERIAL PRIMARY KEY,
+      option_id INTEGER NOT NULL, value_ar TEXT NOT NULL, value_fr TEXT NOT NULL, value_en TEXT NOT NULL,
+      price_adjustment NUMERIC(12,2) DEFAULT 0, sort_order INTEGER DEFAULT 0,
+      FOREIGN KEY (option_id) REFERENCES product_options(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS order_item_options (
+      id SERIAL PRIMARY KEY,
+      order_item_id INTEGER NOT NULL, option_name TEXT NOT NULL, value_name TEXT NOT NULL,
+      price_adjustment NUMERIC(12,2) DEFAULT 0,
+      FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS shipping_zones (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL, description TEXT,
+      free_shipping_min NUMERIC(12,2) DEFAULT NULL,
+      free_shipping_active INTEGER DEFAULT 0,
+      active INTEGER DEFAULT 1,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS product_offers (
+      id SERIAL PRIMARY KEY,
+      product_id INTEGER NOT NULL,
+      type TEXT NOT NULL DEFAULT 'bogo',
+      min_qty INTEGER NOT NULL DEFAULT 2,
+      free_qty INTEGER DEFAULT 0,
+      discount_percent NUMERIC(12,2) DEFAULT 0,
+      offer_label_ar TEXT, offer_label_fr TEXT, offer_label_en TEXT,
+      active INTEGER DEFAULT 1,
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS product_bottom_images (
+      id SERIAL PRIMARY KEY,
+      product_id INTEGER NOT NULL, image_url TEXT NOT NULL, sort_order INTEGER DEFAULT 0,
+      FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    );
+    CREATE TABLE IF NOT EXISTS delivery_apis (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL, api_url TEXT NOT NULL, api_key TEXT NOT NULL,
+      active INTEGER DEFAULT 1, created_at TIMESTAMPTZ DEFAULT NOW()
+    );
     CREATE TABLE IF NOT EXISTS recently_viewed (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       session_id TEXT NOT NULL, product_id INTEGER NOT NULL,
-      viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      viewed_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (product_id) REFERENCES products(id)
     );
     CREATE TABLE IF NOT EXISTS page_views (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       session_id TEXT, page TEXT NOT NULL,
-      viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      viewed_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
 
-  runSqliteMigrations(db);
-
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-  if (userCount.count === 0) {
+  const userCount = await pool.query('SELECT COUNT(*)::int as count FROM users');
+  if (userCount.rows[0].count === 0) {
     const hash = bcrypt.hashSync('admin123', 10);
-    db.prepare('INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)').run('admin', 'admin@store.com', hash, 'admin');
-    seedWilayasSqlite(db);
+    await pool.query('INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4)', ['admin', 'admin@store.com', hash, 'admin']);
+    await seedWilayasPg(pool);
   }
 }
 
-function runSqliteMigrations(db) {
-  const pCols = db.prepare("PRAGMA table_info(products)").all().map(c => c.name);
-  if (!pCols.includes('show_shipping')) db.exec('ALTER TABLE products ADD COLUMN show_shipping INTEGER DEFAULT 1');
-  if (!pCols.includes('show_price')) db.exec('ALTER TABLE products ADD COLUMN show_price INTEGER DEFAULT 1');
-  if (!pCols.includes('content_bottom')) db.exec('ALTER TABLE products ADD COLUMN content_bottom TEXT DEFAULT NULL');
-  db.exec(`CREATE TABLE IF NOT EXISTS product_options (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INTEGER NOT NULL, name_ar TEXT NOT NULL, name_fr TEXT NOT NULL, name_en TEXT NOT NULL,
-    type TEXT DEFAULT 'radio', required INTEGER DEFAULT 0, sort_order INTEGER DEFAULT 0,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-  )`);
-  db.exec(`CREATE TABLE IF NOT EXISTS product_option_values (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    option_id INTEGER NOT NULL, value_ar TEXT NOT NULL, value_fr TEXT NOT NULL, value_en TEXT NOT NULL,
-    price_adjustment REAL DEFAULT 0, sort_order INTEGER DEFAULT 0,
-    FOREIGN KEY (option_id) REFERENCES product_options(id) ON DELETE CASCADE
-  )`);
-  db.exec(`CREATE TABLE IF NOT EXISTS order_item_options (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    order_item_id INTEGER NOT NULL, option_name TEXT NOT NULL, value_name TEXT NOT NULL, price_adjustment REAL DEFAULT 0,
-    FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
-  )`);
-  const cols = db.prepare("PRAGMA table_info(communes)").all().map(c => c.name);
-  if (!cols.includes('active')) db.exec('ALTER TABLE communes ADD COLUMN active INTEGER DEFAULT 1');
-  if (!cols.includes('shipping_price')) db.exec('ALTER TABLE communes ADD COLUMN shipping_price REAL DEFAULT 0');
-  if (!cols.includes('free_shipping_min')) db.exec('ALTER TABLE communes ADD COLUMN free_shipping_min REAL DEFAULT NULL');
-  if (!cols.includes('shipping_price_office')) db.exec('ALTER TABLE communes ADD COLUMN shipping_price_office REAL DEFAULT NULL');
-  const wCols = db.prepare("PRAGMA table_info(wilayas)").all().map(c => c.name);
-  if (!wCols.includes('shipping_price_office')) db.exec('ALTER TABLE wilayas ADD COLUMN shipping_price_office REAL DEFAULT NULL');
-  db.exec(`CREATE TABLE IF NOT EXISTS shipping_zones (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL, description TEXT,
-    free_shipping_min REAL DEFAULT NULL,
-    free_shipping_active INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-  const zCols = db.prepare("PRAGMA table_info(shipping_zones)").all().map(c => c.name);
-  if (!zCols.includes('active')) db.exec('ALTER TABLE shipping_zones ADD COLUMN active INTEGER DEFAULT 1');
-  db.exec(`CREATE TABLE IF NOT EXISTS product_offers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INTEGER NOT NULL,
-    type TEXT NOT NULL DEFAULT 'bogo',
-    min_qty INTEGER NOT NULL DEFAULT 2,
-    free_qty INTEGER DEFAULT 0,
-    discount_percent REAL DEFAULT 0,
-    offer_label_ar TEXT, offer_label_fr TEXT, offer_label_en TEXT,
-    active INTEGER DEFAULT 1,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-  )`);
-  db.exec(`CREATE TABLE IF NOT EXISTS product_bottom_images (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INTEGER NOT NULL, image_url TEXT NOT NULL, sort_order INTEGER DEFAULT 0,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
-  )`);
-  db.exec(`CREATE TABLE IF NOT EXISTS delivery_apis (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL, api_url TEXT NOT NULL, api_key TEXT NOT NULL,
-    active INTEGER DEFAULT 1, created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`);
-}
-
-function seedWilayasSqlite(db) {
+async function seedWilayasPg(pool) {
   const data = [
     ['01','أدرار','Adrar','Adrar'],['02','الشلف','Chlef','Chlef'],['03','الأغواط','Laghouat','Laghouat'],
     ['04','أم البواقي','Oum El Bouaghi','Oum El Bouaghi'],['05','باتنة','Batna','Batna'],
@@ -318,8 +258,9 @@ function seedWilayasSqlite(db) {
     ['55','تقرت','Touggourt','Touggourt'],['56','جانت','Djanet','Djanet'],
     ['57','عين صالح','In Salah','In Salah'],['58','عين قزام','In Guezzam','In Guezzam']
   ];
-  const w = db.prepare('INSERT OR IGNORE INTO wilayas (code, name_ar, name_fr, name_en) VALUES (?, ?, ?, ?)');
-  for (const row of data) w.run(row[0], row[1], row[2], row[3]);
+  for (const row of data) {
+    await pool.query('INSERT INTO wilayas (code, name_ar, name_fr, name_en) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING', row);
+  }
 }
 
-module.exports = { getDb };
+module.exports = { initPgSchema };
