@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node db/seed.js",
-    "vercel-build": "node db/seed.js"
+    "vercel-build": "node db/init.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
