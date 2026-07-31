@@ -1,0 +1,26 @@
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h3 style="font-size:1rem;font-weight:700">Pages</h3>
+  <a href="/admin/pages/new" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> New Page</a>
+</div>
+<div class="table-container">
+  <table class="data-table">
+    <thead><tr><th>Title</th><th>Slug</th><th>Published</th><th>Date</th><th></th></tr></thead>
+    <tbody>
+      <% if (pages.length === 0) { %><tr><td colspan="5" class="empty-cell">No pages</td></tr><% } %>
+      <% pages.forEach(function(p) { %>
+        <tr>
+          <td><strong><%= p.title_fr %></strong></td>
+          <td>/<%= p.slug %></td>
+          <td><span class="badge <%= p.published ? 'badge-success' : 'badge-warning' %>"><%= p.published ? 'Published' : 'Draft' %></span></td>
+          <td><%= new Date(p.created_at).toLocaleDateString() %></td>
+          <td class="actions-cell">
+            <a href="/admin/pages/<%= p.id %>/edit" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>
+            <form action="/admin/pages/delete/<%= p.id %>" method="POST" style="display:inline">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,32 @@
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h2 style="font-size:1.2rem;font-weight:700">All Products (<%= products.length %>)</h2>
+  <a href="/admin/products/new" class="btn btn-primary"><i class="fas fa-plus"></i> New Product</a>
+</div>
+<div class="table-container">
+  <table class="data-table">
+    <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Sold</th><th>Featured</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+      <% if (products.length === 0) { %><tr><td colspan="8" class="empty-cell">No products</td></tr><% } %>
+      <% products.forEach(function(p) { %>
+        <tr>
+          <td><div style="width:40px;height:40px;background:var(--gray-100);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:#ccc"><i class="fas fa-box"></i></div></td>
+          <td><strong><%= p.name_fr || p.name_ar %></strong><br><span style="font-size:0.78rem;color:var(--gray-400)"><%= p.cat_fr || '' %></span></td>
+          <td><%= p.price.toFixed(2) %> DA</td>
+          <td>
+            <span class="stock-indicator <%= p.stock > 10 ? 'ok' : p.stock > 0 ? 'low' : 'out' %>"></span>
+            <%= p.stock %>
+          </td>
+          <td><%= p.total_sold || 0 %></td>
+          <td><span class="badge <%= p.featured ? 'badge-success' : 'badge-warning' %>"><%= p.featured ? 'Yes' : 'No' %></span></td>
+          <td><span class="badge <%= p.active ? 'badge-success' : 'badge-danger' %>"><%= p.active ? 'Active' : 'Inactive' %></span></td>
+          <td class="actions-cell">
+            <a href="/admin/products/<%= p.id %>/edit" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a>
+            <form action="/admin/products/delete/<%= p.id %>" method="POST" style="display:inline">
+              <button type="submit" class="btn btn-sm btn-danger" data-confirm="Delete this product?" onclick="return confirm('Delete this product?')"><i class="fas fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

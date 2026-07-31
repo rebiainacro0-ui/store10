@@ -1,0 +1,64 @@
+<section class="section page-header">
+  <div class="container">
+    <h1><%= lang === 'ar' ? 'المنتجات' : lang === 'fr' ? 'Produits' : 'Products' %></h1>
+    <div class="breadcrumb">
+      <a href="/"><%= lang === 'ar' ? 'الرئيسية' : lang === 'fr' ? 'Accueil' : 'Home' %></a> <i class="fas fa-chevron-left" style="font-size:0.6rem;color:#ccc"></i>
+      <span><%= lang === 'ar' ? 'المنتجات' : lang === 'fr' ? 'Produits' : 'Products' %></span>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="shop-layout">
+      <aside class="shop-sidebar">
+        <h3><%= lang === 'ar' ? 'الأقسام' : lang === 'fr' ? 'Catégories' : 'Categories' %></h3>
+        <ul class="category-list">
+          <li><a href="/products" class="<%= !selectedCategory ? 'active' : '' %>"><%= lang === 'ar' ? 'الكل' : lang === 'fr' ? 'Tous' : 'All' %></a></li>
+          <% categories.forEach(function(cat) { %>
+            <li><a href="/products?category=<%= cat.slug %>" class="<%= selectedCategory === cat.slug ? 'active' : '' %>"><%= cat['name_' + lang] %></a></li>
+          <% }) %>
+        </ul>
+        <form action="/products" method="GET" class="search-form" style="margin-top:16px">
+          <input type="text" name="search" value="<%= search || '' %>" placeholder="<%= lang === 'ar' ? 'بحث...' : lang === 'fr' ? 'Rechercher...' : 'Search...' %>">
+          <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+        </form>
+      </aside>
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <p style="color:var(--gray-500);font-size:0.9rem"><%= products.length %> <%= lang === 'ar' ? 'منتج' : lang === 'fr' ? 'produits' : 'products' %></p>
+        </div>
+        <% if (products.length === 0) { %>
+          <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h2><%= lang === 'ar' ? 'لا توجد منتجات' : lang === 'fr' ? 'Aucun produit' : 'No products found' %></h2>
+            <p><%= lang === 'ar' ? 'لم نجد أي منتجات تطابق بحثك' : lang === 'fr' ? 'Aucun produit ne correspond à votre recherche' : 'No products match your search' %></p>
+            <a href="/products" class="btn btn-primary"><%= lang === 'ar' ? 'عرض الكل' : lang === 'fr' ? 'Voir tout' : 'View All' %></a>
+          </div>
+        <% } else { %>
+          <div class="products-grid">
+            <% products.forEach(function(product) { %>
+              <a href="/products/<%= product.slug %>" class="product-card">
+                <div class="product-image">
+                  <% if (product.image_url) { %>
+                    <img src="<%= product.image_url %>" alt="<%= product['name_' + lang] %>">
+                  <% } else { %>
+                    <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#ccc;font-size:3rem"><i class="fas fa-box"></i></div>
+                  <% } %>
+                  <% if (product.compare_price) { %><span class="product-badge sale"><%= lang === 'ar' ? 'تخفيض' : 'Sale' %></span><% } %>
+                </div>
+                <div class="product-info">
+                  <h3><%= product['name_' + lang] %></h3>
+                  <div class="product-price-row">
+                    <span class="current-price"><%= product.price.toFixed(2) %> DA</span>
+                    <% if (product.compare_price) { %><span class="compare-price"><%= product.compare_price.toFixed(2) %> DA</span><% } %>
+                  </div>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>

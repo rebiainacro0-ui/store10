@@ -1,0 +1,11 @@
+<section class="section" style="padding:100px 0">
+  <div class="container">
+    <div class="empty-state">
+      <i class="fas fa-exclamation-triangle" style="color:var(--gray-300)"></i>
+      <h1 style="font-size:5rem;font-weight:900;color:var(--gray-200)">404</h1>
+      <h2><%= lang === 'ar' ? 'الصفحة غير موجودة' : lang === 'fr' ? 'Page non trouvée' : 'Page Not Found' %></h2>
+      <p><%= lang === 'ar' ? 'عذراً، الصفحة التي تبحث عنها غير موجودة' : lang === 'fr' ? 'Désolé, la page que vous cherchez n\'existe pas' : 'Sorry, the page you are looking for does not exist' %></p>
+      <a href="/" class="btn btn-primary btn-lg"><%= lang === 'ar' ? 'العودة للرئيسية' : lang === 'fr' ? 'Retour à l\'accueil' : 'Back to Home' %></a>
+    </div>
+  </div>
+</section>

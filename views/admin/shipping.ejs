@@ -1,0 +1,65 @@
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+  <h2 style="font-size:1.2rem;font-weight:700">Shipping Management</h2>
+  <div style="display:flex;gap:8px">
+    <a href="/admin/shipping/zones" class="btn btn-sm btn-outline"><i class="fas fa-layer-group"></i> Shipping Zones</a>
+  </div>
+</div>
+
+<div class="table-container">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <h3 style="font-size:1rem;font-weight:700">Wilaya Shipping Prices</h3>
+    <span style="font-size:0.8rem;color:var(--gray-500)">Set home & office delivery prices per wilaya</span>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>Wilaya</th><th style="width:130px">🏠 Home (DA)</th><th style="width:130px">🏢 Office (DA)</th><th style="width:130px">Free Min (DA)</th><th style="width:70px">Communes</th><th style="width:60px"></th></tr></thead>
+    <tbody>
+      <% wilayas.forEach(function(w) { %>
+        <tr>
+          <td style="font-weight:600;font-size:0.9rem"><%= w.code %> - <%= w.name_fr %></td>
+          <td><input type="number" step="0.01" class="w-price" data-code="<%= w.code %>" value="<%= w.shipping_price %>" style="width:100%;padding:6px 8px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.9rem;text-align:center"></td>
+          <td><input type="number" step="0.01" class="w-office" data-code="<%= w.code %>" value="<%= w.shipping_price_office || '' %>" style="width:100%;padding:6px 8px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.9rem;text-align:center" placeholder="Same as home"></td>
+          <td><input type="number" step="0.01" class="w-free" data-code="<%= w.code %>" value="<%= w.free_shipping_min || '' %>" style="width:100%;padding:6px 8px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.9rem;text-align:center" placeholder="Disabled"></td>
+          <td><a href="/admin/shipping/wilaya/<%= w.code %>" class="btn btn-sm btn-outline" style="display:block;text-align:center"><%= w.commune_count || 0 %></a></td>
+          <td><button class="btn btn-sm btn-primary w-save" data-code="<%= w.code %>" title="Save"><i class="fas fa-save"></i></button></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<% if (zones && zones.length > 0) { %>
+<div class="table-container" style="margin-top:24px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center">
+    <h3 style="font-size:1rem;font-weight:700">Shipping Zones</h3>
+    <a href="/admin/shipping/zones" class="btn btn-sm btn-outline"><i class="fas fa-plus"></i> Manage</a>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Free Shipping Min</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+      <% zones.forEach(function(z) { %>
+        <tr><td><strong><%= z.name %></strong></td><td><%= z.free_shipping_min ? z.free_shipping_min + ' DA' : '—' %></td><td><span class="badge <%= z.active ? 'badge-success' : 'badge-danger' %>"><%= z.active ? 'Yes' : 'No' %></span></td>
+        <td><a href="/admin/shipping/zones" class="btn btn-sm btn-outline"><i class="fas fa-edit"></i></a></td></tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.w-save').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var code = this.dataset.code;
+      var price = document.querySelector('.w-price[data-code="' + code + '"]').value;
+      var office = document.querySelector('.w-office[data-code="' + code + '"]').value;
+      var free = document.querySelector('.w-free[data-code="' + code + '"]').value;
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/admin/shipping/wilaya/save';
+      form.innerHTML = '<input name="code" value="' + code + '"><input name="shipping_price" value="' + price + '"><input name="free_shipping_min" value="' + free + '"><input name="shipping_price_office" value="' + office + '">';
+      document.body.appendChild(form);
+      form.submit();
+    });
+  });
+});
+</script>

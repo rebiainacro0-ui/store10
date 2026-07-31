@@ -1,0 +1,165 @@
+<section class="hero">
+  <div class="container">
+    <div class="hero-slider">
+      <div class="hero-slide active">
+        <div class="hero-content">
+          <div class="hero-badge"><i class="fas fa-truck"></i> <%= lang === 'ar' ? 'توصيل مجاني إلى جميع الولايات' : lang === 'fr' ? 'Livraison gratuite dans toutes les wilayas' : 'Free delivery nationwide' %></div>
+          <h1><%= lang === 'ar' ? 'تسوق بأفضل الأسعار في الجزائر' : lang === 'fr' ? 'Shop aux meilleurs prix en Algérie' : 'Shop the Best Prices in Algeria' %></h1>
+          <p><%= lang === 'ar' ? 'اكتشف تشكيلتنا المميزة من المنتجات عالية الجودة مع توصيل سريع وآمن إلى جميع ولايات الجزائر' : lang === 'fr' ? 'Découvrez notre sélection de produits de haute qualité avec livraison rapide et sécurisée dans toutes les wilayas d\'Algérie' : 'Discover our curated selection of high-quality products with fast, secure delivery to all Algerian wilayas' %></p>
+          <a href="/products" class="btn btn-white btn-lg"><%= lang === 'ar' ? 'تسوق الآن' : lang === 'fr' ? 'Acheter maintenant' : 'Shop Now' %> <i class="fas fa-arrow-left"></i></a>
+        </div>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><strong>58</strong> <span><%= lang === 'ar' ? 'ولاية' : lang === 'fr' ? 'Wilayas' : 'Wilayas' %></span></div>
+      <div class="hero-stat"><strong>100%</strong> <span><%= lang === 'ar' ? 'توصيل آمن' : lang === 'fr' ? 'Livraison sécurisée' : 'Safe Delivery' %></span></div>
+      <div class="hero-stat"><strong><%= lang === 'ar' ? 'الدفع عند الاستلام' : lang === 'fr' ? 'Paiement à la livraison' : 'Cash on Delivery' %></strong> <span><%= lang === 'ar' ? 'بدون مخاطرة' : lang === 'fr' ? 'Sans risque' : 'No Risk' %></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Flash Sales -->
+<% if (flashSales && flashSales.length > 0) { %>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title"><%= lang === 'ar' ? 'تخفيضات اليوم' : lang === 'fr' ? 'Promotions du jour' : 'Today\'s Deals' %></h2>
+        <p class="section-subtitle"><%= lang === 'ar' ? 'عروض محدودة بوقت' : lang === 'fr' ? 'Offres limitées dans le temps' : 'Limited time offers' %></p>
+      </div>
+    </div>
+    <div class="products-grid">
+      <% flashSales.forEach(function(sale) { %>
+        <a href="/products/<%= sale.slug %>" class="product-card flash-card">
+          <div class="product-image">
+            <% if (sale.image_url) { %>
+              <img src="<%= sale.image_url %>" alt="<%= sale['name_' + lang] %>">
+            <% } else { %>
+              <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#ccc;font-size:3rem"><i class="fas fa-box"></i></div>
+            <% } %>
+            <span class="product-flash-badge">-<%= sale.discount_percent %>%</span>
+          </div>
+          <div class="flash-timer">
+            <div class="flash-countdown" data-end="<%= sale.end_date %>">
+              <div class="time-block"><span class="num hours">00</span><span class="label"><%= lang === 'ar' ? 'س' : 'h' %></span></div>
+              <div class="time-block"><span class="num mins">00</span><span class="label"><%= lang === 'ar' ? 'د' : 'm' %></span></div>
+              <div class="time-block"><span class="num secs">00</span><span class="label"><%= lang === 'ar' ? 'ث' : 's' %></span></div>
+            </div>
+          </div>
+          <div class="product-info">
+            <h3><%= sale['name_' + lang] %></h3>
+            <div class="product-price-row">
+              <span class="current-price"><%= (sale.price * (1 - sale.discount_percent/100)).toFixed(2) %> DA</span>
+              <span class="compare-price"><%= sale.price.toFixed(2) %> DA</span>
+            </div>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<!-- Categories -->
+<section class="section">
+  <div class="container">
+    <div class="text-center">
+      <h2 class="section-title"><%= lang === 'ar' ? 'تسوق حسب القسم' : lang === 'fr' ? 'Acheter par catégorie' : 'Shop by Category' %></h2>
+      <p class="section-subtitle"><%= lang === 'ar' ? 'تصفح مجموعتنا المتنوعة من المنتجات' : lang === 'fr' ? 'Parcourez notre gamme de produits' : 'Browse our product range' %></p>
+    </div>
+    <div class="categories-grid">
+      <% categories.forEach(function(cat) { %>
+        <a href="/products?category=<%= cat.slug %>" class="category-card">
+          <div class="cat-icon"><i class="fas fa-<%= cat.slug === 'electronics' ? 'laptop' : cat.slug === 'clothing' ? 'tshirt' : cat.slug === 'home-garden' ? 'home' : cat.slug === 'sports-outdoors' ? 'running' : cat.slug === 'books' ? 'book' : 'tag' %>"></i></div>
+          <h3><%= cat['name_' + lang] %></h3>
+          <p><%= cat['description_' + lang] %></p>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Products -->
+<section class="section" style="background:var(--white)">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title"><%= lang === 'ar' ? 'المنتجات المميزة' : lang === 'fr' ? 'Produits vedettes' : 'Featured Products' %></h2>
+        <p class="section-subtitle"><%= lang === 'ar' ? 'أفضل المنتجات لهذا الأسبوع' : lang === 'fr' ? 'Les meilleurs produits de la semaine' : 'Best products this week' %></p>
+      </div>
+      <a href="/products" class="btn btn-outline"><%= lang === 'ar' ? 'عرض الكل' : lang === 'fr' ? 'Voir tout' : 'View All' %> <i class="fas fa-arrow-left"></i></a>
+    </div>
+    <div class="products-grid">
+      <% featured.forEach(function(product) { %>
+        <a href="/products/<%= product.slug %>" class="product-card">
+          <div class="product-image">
+            <% if (product.image_url) { %>
+              <img src="<%= product.image_url %>" alt="<%= product['name_' + lang] %>">
+            <% } else { %>
+              <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#ccc;font-size:3rem"><i class="fas fa-box"></i></div>
+            <% } %>
+            <% if (product.compare_price) { %><span class="product-badge sale"><%= lang === 'ar' ? 'تخفيض' : 'Sale' %></span><% } %>
+          </div>
+          <div class="product-info">
+            <h3><%= product['name_' + lang] %></h3>
+            <div class="product-price-row">
+              <span class="current-price"><%= product.price.toFixed(2) %> DA</span>
+              <% if (product.compare_price) { %><span class="compare-price"><%= product.compare_price.toFixed(2) %> DA</span><span class="discount-pct">-<%= Math.round((1 - product.price/product.compare_price)*100) %>%</span><% } %>
+            </div>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section features-section">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feat-icon"><i class="fas fa-truck"></i></div>
+        <h3><%= lang === 'ar' ? 'توصيل إلى جميع الولايات' : lang === 'fr' ? 'Livraison dans toutes les wilayas' : 'Delivery to All Wilayas' %></h3>
+        <p><%= lang === 'ar' ? 'توصيل سريع وآمن إلى 58 ولاية' : lang === 'fr' ? 'Livraison rapide et sécurisée vers 58 wilayas' : 'Fast secure delivery to all 58 wilayas' %></p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon"><i class="fas fa-hand-holding-usd"></i></div>
+        <h3><%= lang === 'ar' ? 'الدفع عند الاستلام' : lang === 'fr' ? 'Paiement à la livraison' : 'Cash on Delivery' %></h3>
+        <p><%= lang === 'ar' ? 'ادفع عند استلام طلبك - آمن ومضمون' : lang === 'fr' ? 'Payez à la réception - sûr et garanti' : 'Pay when you receive - safe & guaranteed' %></p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon"><i class="fas fa-undo"></i></div>
+        <h3><%= lang === 'ar' ? 'إرجاع مجاني' : lang === 'fr' ? 'Retour gratuit' : 'Free Returns' %></h3>
+        <p><%= lang === 'ar' ? 'إرجاع خلال 14 يوم بدون طرح أسئلة' : lang === 'fr' ? 'Retour sous 14 jours sans poser de questions' : '14-day no-questions-asked returns' %></p>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon"><i class="fas fa-headset"></i></div>
+        <h3><%= lang === 'ar' ? 'دعم 24/7' : lang === 'fr' ? 'Support 24/7' : '24/7 Support' %></h3>
+        <p><%= lang === 'ar' ? 'فريق دعم متاح لمساعدتك على مدار الساعة' : lang === 'fr' ? 'Équipe de support disponible 24h/24' : 'Support team available around the clock' %></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Top Rated -->
+<% if (typeof topRated !== 'undefined' && topRated.length > 0) { %>
+<section class="section">
+  <div class="container">
+    <h2 class="section-title"><%= lang === 'ar' ? 'الأكثر تقييماً' : lang === 'fr' ? 'Les mieux notés' : 'Top Rated' %></h2>
+    <div class="products-grid">
+      <% topRated.forEach(function(p) { %>
+        <a href="/products/<%= p.slug %>" class="product-card">
+          <div class="product-image">
+            <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#ccc;font-size:3rem"><i class="fas fa-box"></i></div>
+          </div>
+          <div class="product-info">
+            <div class="product-rating"><span class="stars"><% for(var i=0;i<5;i++){%><%= i < Math.round(p.avg_rating) ? '★' : '☆' %><% } %></span> (<%= p.review_count %>)</div>
+            <h3><%= p['name_' + lang] %></h3>
+            <div class="product-price-row"><span class="current-price"><%= p.price.toFixed(2) %> DA</span></div>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>

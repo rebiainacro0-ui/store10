@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+server.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+*.tgz
+*.tar.gz
+store.db
+store.db-*
+.vercel

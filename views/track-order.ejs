@@ -1,0 +1,57 @@
+<section class="section page-header">
+  <div class="container">
+    <h1><%= lang === 'ar' ? 'تتبع الطلب' : lang === 'fr' ? 'Suivi de commande' : 'Track Order' %></h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <% if (typeof error !== 'undefined' && error) { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
+
+    <div class="track-form">
+      <form action="/track-order" method="POST">
+        <div class="form-section" style="background:var(--white);padding:32px;border-radius:var(--radius-lg);border:1px solid var(--gray-200)">
+          <h2 style="margin-bottom:16px"><%= lang === 'ar' ? 'أدخل معلومات طلبك' : lang === 'fr' ? 'Entrez les informations de votre commande' : 'Enter your order details' %></h2>
+          <div class="form-row">
+            <div class="form-group">
+              <label><%= lang === 'ar' ? 'رقم الطلب' : lang === 'fr' ? 'Numéro de commande' : 'Order Number' %> <span class="required">*</span></label>
+              <input type="text" name="order_number" required placeholder="DZ-...">
+            </div>
+            <div class="form-group">
+              <label><%= lang === 'ar' ? 'رقم الهاتف' : lang === 'fr' ? 'Numéro de téléphone' : 'Phone Number' %> <span class="required">*</span></label>
+              <input type="tel" name="phone" required placeholder="05XX XX XX XX">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg"><%= lang === 'ar' ? 'تتبع' : lang === 'fr' ? 'Suivre' : 'Track' %></button>
+        </div>
+      </form>
+    </div>
+
+    <% if (typeof order !== 'undefined' && order) { %>
+      <div class="order-details-card">
+        <h3><%= lang === 'ar' ? 'طلب رقم' : lang === 'fr' ? 'Commande N°' : 'Order' %> <%= order.order_number %></h3>
+        <p><strong><%= lang === 'ar' ? 'الحالة' : lang === 'fr' ? 'Statut' : 'Status' %>:</strong> <span class="status-badge <%= order.status %>"><%= order.status %></span></p>
+        <p><strong><%= lang === 'ar' ? 'الولاية' : lang === 'fr' ? 'Wilaya' : 'Wilaya' %>:</strong> <%= order['wilaya_' + lang] %></p>
+        <p><strong><%= lang === 'ar' ? 'الإجمالي' : lang === 'fr' ? 'Total' : 'Total' %>:</strong> <%= order.total.toFixed(2) %> DA</p>
+        <% if (order.delivery_company) { %>
+          <p><strong><%= lang === 'ar' ? 'شركة التوصيل' : lang === 'fr' ? 'Transporteur' : 'Delivery Company' %>:</strong> <%= order.delivery_company %></p>
+        <% } %>
+        <% if (order.tracking_url) { %>
+          <p><a href="<%= order.tracking_url %>" target="_blank" class="btn btn-primary btn-sm"><%= lang === 'ar' ? 'تتبع الشحنة' : lang === 'fr' ? 'Suivre le colis' : 'Track Package' %></a></p>
+        <% } %>
+      </div>
+
+      <% if (typeof history !== 'undefined' && history) { %>
+      <div class="order-shipping-card">
+        <h3><%= lang === 'ar' ? 'تاريخ الطلب' : lang === 'fr' ? 'Historique' : 'Order History' %></h3>
+        <% history.forEach(function(h) { %>
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--gray-100)">
+            <span class="status-badge <%= h.status %>"><%= h.status %></span>
+            <span style="font-size:0.85rem;color:var(--gray-500)"><%= new Date(h.created_at).toLocaleString() %></span>
+          </div>
+        <% }) %>
+      </div>
+      <% } %>
+    <% } %>
+  </div>
+</section>

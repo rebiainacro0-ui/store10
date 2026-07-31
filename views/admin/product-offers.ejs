@@ -1,0 +1,62 @@
+<h3 class="form-section-title" style="margin-top:20px"><i class="fas fa-gift"></i> Smart Offers (العروض الذكية)</h3>
+<div id="offersContainer">
+  <% if (offers && offers.length > 0) { offers.forEach(function(of, oi) { %>
+    <div class="offer-group" style="border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:var(--gray-50)">
+      <input type="hidden" name="offers[<%= oi %>][id]" value="<%= of.id %>">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Offer Type</label>
+          <select name="offers[<%= oi %>][type]" class="offer-type-select">
+            <option value="bogo" <%= of.type === 'bogo' ? 'selected' : '' %>>Buy X Get Y Free (اشتري X واحصل على Y مجانا)</option>
+            <option value="free_shipping" <%= of.type === 'free_shipping' ? 'selected' : '' %>>Free Shipping on X+ (توصيل مجاني عند شراء X+)</option>
+            <option value="percent" <%= of.type === 'percent' ? 'selected' : '' %>>Percentage Discount on X+ (خصم نسبة عند شراء X+)</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Active</label><input type="checkbox" name="offers[<%= oi %>][active]" value="1" <%= of.active ? 'checked' : '' %>></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Min Quantity (X)</label><input type="number" name="offers[<%= oi %>][min_qty]" value="<%= of.min_qty %>" min="1" required></div>
+        <div class="form-group bogo-field" style="<%= of.type !== 'bogo' ? 'display:none' : '' %>"><label>Free Quantity (Y)</label><input type="number" name="offers[<%= oi %>][free_qty]" value="<%= of.free_qty || 0 %>" min="0"></div>
+        <div class="form-group pct-field" style="<%= of.type !== 'percent' ? 'display:none' : '' %>"><label>Discount %</label><input type="number" name="offers[<%= oi %>][discount_percent]" value="<%= of.discount_percent || 0 %>" min="0" max="100"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Label (Arabic)</label><input type="text" name="offers[<%= oi %>][offer_label_ar]" value="<%= of.offer_label_ar || '' %>" placeholder="مثلاً: اشتري 2 واحصل على 1 مجاناً"></div>
+        <div class="form-group"><label>Label (French)</label><input type="text" name="offers[<%= oi %>][offer_label_fr]" value="<%= of.offer_label_fr || '' %>" placeholder="ex: Achetez 2, obtenez 1 gratuit"></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-danger remove-offer"><i class="fas fa-trash"></i> Remove Offer</button>
+    </div>
+  <% }) } %>
+</div>
+<button type="button" id="addOfferBtn" class="btn btn-sm btn-outline"><i class="fas fa-plus"></i> Add Offer</button>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var ofIdx = <%= (offers && offers.length) || 0 %>;
+  var container = document.getElementById('offersContainer');
+  document.getElementById('addOfferBtn').addEventListener('click', function(){
+    var div = document.createElement('div');
+    div.className = 'offer-group';
+    div.style.cssText = 'border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:var(--gray-50)';
+    div.innerHTML = '<input type="hidden" name="offers[' + ofIdx + '][id]" value="">' +
+      '<div class="form-row"><div class="form-group"><label>Offer Type</label><select name="offers[' + ofIdx + '][type]" class="offer-type-select"><option value="bogo">Buy X Get Y Free</option><option value="free_shipping">Free Shipping on X+</option><option value="percent">Percentage Discount on X+</option></select></div><div class="form-group"><label>Active</label><input type="checkbox" name="offers[' + ofIdx + '][active]" value="1"></div></div>' +
+      '<div class="form-row"><div class="form-group"><label>Min Quantity (X)</label><input type="number" name="offers[' + ofIdx + '][min_qty]" min="1" required></div><div class="form-group bogo-field"><label>Free Quantity (Y)</label><input type="number" name="offers[' + ofIdx + '][free_qty]" min="0"></div><div class="form-group pct-field" style="display:none"><label>Discount %</label><input type="number" name="offers[' + ofIdx + '][discount_percent]" min="0" max="100"></div></div>' +
+      '<div class="form-row"><div class="form-group"><label>Label (Arabic)</label><input type="text" name="offers[' + ofIdx + '][offer_label_ar]" placeholder="مثلاً: اشتري 2 واحصل على 1 مجاناً"></div><div class="form-group"><label>Label (French)</label><input type="text" name="offers[' + ofIdx + '][offer_label_fr]" placeholder="ex: Achetez 2, obtenez 1 gratuit"></div></div>' +
+      '<button type="button" class="btn btn-sm btn-danger remove-offer"><i class="fas fa-trash"></i> Remove Offer</button>';
+    container.appendChild(div);
+    ofIdx++;
+  });
+  container.addEventListener('click', function(e){
+    if (e.target.closest('.remove-offer')) e.target.closest('.offer-group').remove();
+  });
+  container.addEventListener('change', function(e){
+    var sel = e.target.closest('.offer-type-select');
+    if (sel) {
+      var grp = sel.closest('.offer-group');
+      var bogo = grp.querySelector('.bogo-field');
+      var pct = grp.querySelector('.pct-field');
+      bogo.style.display = sel.value === 'bogo' ? '' : 'none';
+      pct.style.display = sel.value === 'percent' ? '' : 'none';
+    }
+  });
+});
+</script>

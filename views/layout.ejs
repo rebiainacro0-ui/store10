@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %><%= settings.store_name_ar || 'متجر الجزائر' %></title>
+  <meta name="description" content="أفضل متجر إلكتروني في الجزائر - تسوق بأفضل الأسعار مع توصيل إلى جميع الولايات">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: <%= settings.primary_color || '#006633' %>;
+      --primary-dark: <%= settings.primary_dark || '#004d26' %>;
+      --accent: <%= settings.accent_color || '#D21034' %>;
+      --accent-dark: <%= settings.accent_dark || '#a60d29' %>;
+      --radius: <%= settings.btn_radius || '8' %>px;
+    }
+    .header { background: <%= settings.header_bg || '#ffffff' %>; }
+    .header .logo-text, .header .nav a, .header .header-icon { color: <%= settings.header_color || '#1a1a2e' %>; }
+    .announcement-bar { background: <%= settings.announce_bg || '#004d26' %>; color: <%= settings.announce_color || '#ffffff' %>; }
+    .footer { background: <%= settings.footer_bg || '#004d26' %>; color: <%= settings.footer_color || '#ffffff' %>; }
+    .btn-primary { background: var(--primary); color: <%= settings.btn_color || '#ffffff' %>; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-accent { background: var(--accent); color: <%= settings.btn_color || '#ffffff' %>; }
+    .btn-accent:hover { background: var(--accent-dark); }
+  </style>
+</head>
+<body>
+  <!-- Announcement Bar -->
+  <div class="announcement-bar">
+    <div class="container">
+      <span><%= settings['announce_text_' + lang] || (lang === 'ar' ? 'توصيل مجاني للطلبات فوق 5000 د.ج' : lang === 'fr' ? 'Livraison gratuite pour les commandes de plus de 5000 DA' : 'Free delivery for orders over 5000 DZD') %></span>
+      <span><%= settings['announce_sub_' + lang] || (lang === 'ar' ? 'الدفع عند الاستلام' : lang === 'fr' ? 'Paiement à la livraison' : 'Cash on delivery') %></span>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-dz">DZ</span>
+          <span class="logo-text"><%= settings['store_name_' + lang] || (lang === 'ar' ? 'متجر الجزائر' : lang === 'fr' ? 'DZ Store' : 'DZ Store') %></span>
+        </div>
+        <nav class="nav" id="mainNav"></nav>
+        <div class="header-actions"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="main">
+    <%- body %>
+  </main>
+
+  <!-- WhatsApp Floating Button -->
+  <a href="https://wa.me/<%= settings.whatsapp_number || '213XXXXXXXXX' %>?text=<%= encodeURIComponent(settings.whatsapp_message || 'Bonjour') %>" target="_blank" class="whatsapp-float" title="<%= lang === 'ar' ? 'تواصل عبر واتساب' : lang === 'fr' ? 'Contactez-nous sur WhatsApp' : 'Contact us on WhatsApp' %>">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+  <!-- Messenger Floating Button -->
+  <a href="https://m.me/YourPage" target="_blank" class="messenger-float" title="Messenger">
+    <i class="fab fa-facebook-messenger"></i>
+  </a>
+
+  <!-- Footer -->
+  <footer class="footer" style="text-align:center;padding:20px;margin-top:40px">
+    <div style="font-size:1.1rem;font-weight:800;margin-bottom:4px">🛡️ <%= settings['footer_line1_' + lang] || (lang === 'ar' ? 'الدفع عند الاستلام' : lang === 'fr' ? 'Paiement à la livraison' : 'Cash on Delivery') %></div>
+    <div style="font-size:0.9rem;opacity:0.9">✅ <%= settings['footer_line2_' + lang] || (lang === 'ar' ? 'ضمان الجودة' : lang === 'fr' ? 'Qualité garantie' : 'Quality Guarantee') %></div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

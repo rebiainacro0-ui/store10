@@ -1,0 +1,16 @@
+<section class="section page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/"><%= lang === 'ar' ? 'الرئيسية' : lang === 'fr' ? 'Accueil' : 'Home' %></a> / <a href="/blog"><%= lang === 'ar' ? 'المدونة' : lang === 'fr' ? 'Blog' : 'Blog' %></a> / <span><%= post['title_' + lang] %></span>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="page-content" style="max-width:800px;margin:0 auto">
+      <h1><%= post['title_' + lang] %></h1>
+      <p style="color:var(--gray-400);margin-bottom:24px"><%= new Date(post.created_at).toLocaleDateString() %></p>
+      <%- post['content_' + lang] %>
+    </div>
+  </div>
+</section>

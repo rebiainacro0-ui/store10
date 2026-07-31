@@ -1,0 +1,46 @@
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+  <h2 style="font-size:1.2rem;font-weight:700">Shipping Zones</h2>
+  <a href="/admin/shipping" class="btn btn-sm btn-outline"><i class="fas fa-arrow-left"></i> Back to Shipping</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+  <div>
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">New Zone</h3>
+    <form action="/admin/shipping/zones/save" method="POST" class="admin-form">
+      <div class="form-group"><label>Zone Name</label><input type="text" name="name" required placeholder="e.g. North Zone"></div>
+      <div class="form-group"><label>Description</label><textarea name="description" rows="2" placeholder="Optional description"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>Free Shipping Min (DA)</label><input type="number" step="0.01" name="free_shipping_min" value="0"></div>
+        <div class="form-check" style="align-self:flex-end;padding-bottom:8px"><input type="checkbox" name="free_shipping_active" value="1"> <label>Enable Free Shipping</label></div>
+      </div>
+      <div class="form-check"><input type="checkbox" name="active" value="1" checked> <label>Active</label></div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">Save Zone</button></div>
+    </form>
+  </div>
+  <div>
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">All Zones</h3>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Free Shipping</th><th>Active</th><th></th></tr></thead>
+        <tbody>
+          <% if (zones.length === 0) { %><tr><td colspan="4" class="empty-cell">No zones defined</td></tr><% } %>
+          <% zones.forEach(function(z) { %>
+            <tr>
+              <td><strong><%= z.name %></strong><br><span style="font-size:0.78rem;color:var(--gray-400)"><%= z.description || '' %></span></td>
+              <td><%= z.free_shipping_active ? (z.free_shipping_min ? '≥' + z.free_shipping_min + ' DA' : 'Active') : 'Disabled' %></td>
+              <td><span class="badge <%= z.active ? 'badge-success' : 'badge-danger' %>"><%= z.active ? 'Yes' : 'No' %></span></td>
+              <td class="actions-cell">
+                <form action="/admin/shipping/zones/duplicate/<%= z.id %>" method="POST" style="display:inline">
+                  <button type="submit" class="btn btn-sm btn-outline" title="Duplicate"><i class="fas fa-copy"></i></button>
+                </form>
+                <form action="/admin/shipping/zones/delete/<%= z.id %>" method="POST" style="display:inline">
+                  <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete zone?')"><i class="fas fa-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

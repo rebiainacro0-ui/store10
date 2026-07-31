@@ -1,0 +1,72 @@
+<section class="section" style="padding:60px 0">
+  <div class="container">
+    <div class="order-confirmation">
+      <div class="confirmation-icon"><i class="fas fa-check-circle"></i></div>
+      <h2><%= lang === 'ar' ? 'تم تأكيد طلبك!' : lang === 'fr' ? 'Commande confirmée !' : 'Order Confirmed!' %></h2>
+      <div class="confirmation-number"><%= order.order_number %></div>
+      <p class="confirmation-msg">
+        <%= lang === 'ar' ? 'شكراً لطلبك. سنقوم بتجهيز طلبك وشحنه في أقرب وقت ممكن. ستتلقى رسالة تأكيد على رقم هاتفك.' : lang === 'fr' ? 'Merci pour votre commande. Nous préparerons votre commande et l\'expédierons dès que possible. Vous recevrez un SMS de confirmation.' : 'Thank you for your order. We will process and ship your order as soon as possible. You will receive a confirmation SMS.' %>
+      </p>
+
+      <!-- Status Tracker -->
+      <div class="status-tracker">
+        <% var steps = [
+          {key: 'pending', ar:'قيد الانتظار', fr:'En attente', en:'Pending'},
+          {key: 'confirmed', ar:'مؤكد', fr:'Confirmée', en:'Confirmed'},
+          {key: 'shipped', ar:'تم الشحن', fr:'Expédiée', en:'Shipped'},
+          {key: 'delivered', ar:'تم التوصيل', fr:'Livrée', en:'Delivered'}
+        ]; %>
+        <% var currentIdx = -1; %>
+        <% steps.forEach(function(s, i) { if(s.key === order.status) currentIdx = i; }) %>
+        <% steps.forEach(function(s, i) { %>
+          <div class="status-step <%= i <= currentIdx ? 'completed' : '' %>">
+            <div class="step-icon"><i class="fas fa-<%= s.key === 'pending' ? 'clock' : s.key === 'confirmed' ? 'check' : s.key === 'shipped' ? 'truck' : 'home' %>"></i></div>
+            <span class="step-label"><%= s[lang] %></span>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="order-details-card">
+        <h3><i class="fas fa-box"></i> <%= lang === 'ar' ? 'تفاصيل الطلب' : lang === 'fr' ? 'Détails de la commande' : 'Order Details' %></h3>
+        <table class="order-table">
+          <thead><tr>
+            <th><%= lang === 'ar' ? 'المنتج' : lang === 'fr' ? 'Produit' : 'Product' %></th>
+            <th><%= lang === 'ar' ? 'السعر' : lang === 'fr' ? 'Prix' : 'Price' %></th>
+            <th><%= lang === 'ar' ? 'الكمية' : lang === 'fr' ? 'Qté' : 'Qty' %></th>
+            <th><%= lang === 'ar' ? 'المجموع' : lang === 'fr' ? 'Total' : 'Total' %></th>
+          </tr></thead>
+          <tbody>
+            <% items.forEach(function(item) { %>
+              <tr>
+                <td><%= item['product_name_' + lang] %><% if (item.options && item.options.length > 0) { %><br><small style="color:var(--gray-600)"><% item.options.forEach(function(o,oi){ %><%= oi > 0 ? ', ' : '' %><%= o.option_name %>: <%= o.value_name %><% }); %></small><% } %></td>
+                <td><%= item.price.toFixed(2) %> DA</td>
+                <td><%= item.quantity %></td>
+                <td><%= item.total.toFixed(2) %> DA</td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <div class="order-totals">
+          <div class="summary-row"><span><%= lang === 'ar' ? 'المجموع' : lang === 'fr' ? 'Sous-total' : 'Subtotal' %></span><span><%= order.subtotal.toFixed(2) %> DA</span></div>
+          <div class="summary-row"><span><%= lang === 'ar' ? 'التوصيل' : lang === 'fr' ? 'Livraison' : 'Shipping' %></span><span><%= order.shipping > 0 ? order.shipping.toFixed(2) + ' DA' : (lang === 'ar' ? 'مجاني' : lang === 'fr' ? 'Gratuit' : 'Free') %></span></div>
+          <% if (order.discount > 0) { %><div class="summary-row"><span><%= lang === 'ar' ? 'الخصم' : lang === 'fr' ? 'Remise' : 'Discount' %></span><span>-<%= order.discount.toFixed(2) %> DA</span></div><% } %>
+          <div class="summary-row total"><span><%= lang === 'ar' ? 'الإجمالي' : lang === 'fr' ? 'Total' : 'Total' %></span><span><%= order.total.toFixed(2) %> DA</span></div>
+        </div>
+      </div>
+
+      <div class="order-shipping-card">
+        <h3><i class="fas fa-truck"></i> <%= lang === 'ar' ? 'معلومات التوصيل' : lang === 'fr' ? 'Informations de livraison' : 'Shipping Info' %></h3>
+        <p><strong><%= lang === 'ar' ? 'الاسم' : lang === 'fr' ? 'Nom' : 'Name' %>:</strong> <%= order.full_name %></p>
+        <p><strong><%= lang === 'ar' ? 'الهاتف' : lang === 'fr' ? 'Téléphone' : 'Phone' %>:</strong> <%= order.phone %></p>
+        <% if (order.phone2) { %><p><strong><%= lang === 'ar' ? 'هاتف 2' : lang === 'fr' ? 'Téléphone 2' : 'Phone 2' %>:</strong> <%= order.phone2 %></p><% } %>
+        <p><strong><%= lang === 'ar' ? 'الولاية' : lang === 'fr' ? 'Wilaya' : 'Wilaya' %>:</strong> <%= order['wilaya_' + lang] %></p>
+        <p><strong><%= lang === 'ar' ? 'العنوان' : lang === 'fr' ? 'Adresse' : 'Address' %>:</strong> <%= order.delivery_address %></p>
+        <p><strong><%= lang === 'ar' ? 'نوع التوصيل' : lang === 'fr' ? 'Type' : 'Delivery' %>:</strong> <%= order.delivery_type === 'home' ? (lang === 'ar' ? 'منزل' : lang === 'fr' ? 'Domicile' : 'Home') : (lang === 'ar' ? 'مكتب' : lang === 'fr' ? 'Bureau' : 'Office') %></p>
+        <p><strong><%= lang === 'ar' ? 'طريقة الدفع' : lang === 'fr' ? 'Paiement' : 'Payment' %>:</strong> <%= order.payment_method === 'cod' ? 'COD' : order.payment_method.toUpperCase() %></p>
+        <% if (order.notes) { %><p><strong><%= lang === 'ar' ? 'ملاحظات' : lang === 'fr' ? 'Notes' : 'Notes' %>:</strong> <%= order.notes %></p><% } %>
+      </div>
+
+      <a href="/" class="btn btn-primary btn-lg"><%= lang === 'ar' ? 'العودة للرئيسية' : lang === 'fr' ? 'Retour à l\'accueil' : 'Back to Home' %></a>
+    </div>
+  </div>
+</section>

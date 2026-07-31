@@ -1,0 +1,25 @@
+<h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">Reviews (<%= reviews.length %>)</h3>
+<div class="table-container">
+  <table class="data-table">
+    <thead><tr><th>Product</th><th>Customer</th><th>Rating</th><th>Comment</th><th>Approved</th><th>Date</th><th></th></tr></thead>
+    <tbody>
+      <% if (reviews.length === 0) { %><tr><td colspan="7" class="empty-cell">No reviews</td></tr><% } %>
+      <% reviews.forEach(function(r) { %>
+        <tr>
+          <td><%= r.product_name %></td>
+          <td><%= r.customer_name %></td>
+          <td><% for(var i=0;i<5;i++){%><%= i < r.rating ? '★' : '☆' %><% } %></td>
+          <td><%= r.comment ? r.comment.substring(0, 50) : '' %></td>
+          <td><span class="badge <%= r.approved ? 'badge-success' : 'badge-warning' %>"><%= r.approved ? 'Yes' : 'No' %></span></td>
+          <td><%= new Date(r.created_at).toLocaleDateString() %></td>
+          <td class="actions-cell">
+            <a href="/admin/reviews/toggle/<%= r.id %>" class="btn btn-sm btn-outline"><i class="fas fa-<%= r.approved ? 'times' : 'check' %>"></i></a>
+            <form action="/admin/reviews/delete/<%= r.id %>" method="POST" style="display:inline">
+              <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

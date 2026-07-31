@@ -1,0 +1,164 @@
+<form action="/admin/update-account" method="POST" class="admin-form" style="border:2px solid var(--green);padding:24px;border-radius:var(--radius-xl);margin-bottom:24px">
+  <h3 class="form-section-title" style="margin-top:0"><i class="fas fa-user-shield"></i> Admin Account</h3>
+  <div class="form-row">
+    <div class="form-group"><label>New Username</label><input type="text" name="username" value="<%= adminUser ? adminUser.username : '' %>" required></div>
+    <div class="form-group"><label>New Password</label><input type="password" name="password" placeholder="Leave empty to keep current" autocomplete="new-password"></div>
+  </div>
+  <div class="form-actions" style="margin-top:8px">
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Account</button>
+  </div>
+</form>
+
+<form action="/admin/settings/save" method="POST" class="admin-form">
+  <h3 class="form-section-title"><i class="fas fa-cog"></i> Store Settings</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Store Name (Arabic)</label><input type="text" name="store_name_ar" value="<%= settings.store_name_ar || 'متجر الجزائر' %>"></div>
+    <div class="form-group"><label>Store Name (French)</label><input type="text" name="store_name_fr" value="<%= settings.store_name_fr || 'DZ Store' %>"></div>
+  </div>
+  <div class="form-group"><label>Store Email</label><input type="email" name="store_email" value="<%= settings.store_email || 'contact@dzstore.dz' %>"></div>
+  <div class="form-group"><label>Store Phone</label><input type="text" name="store_phone" value="<%= settings.store_phone || '021 123 456' %>"></div>
+  <div class="form-group"><label>Address</label><input type="text" name="store_address" value="<%= settings.store_address || 'Alger, Algérie' %>"></div>
+
+  <!-- Announcement Bar -->
+  <h3 class="form-section-title"><i class="fas fa-bullhorn"></i> Announcement Bar</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Text (Arabic)</label><input type="text" name="announce_text_ar" value="<%= settings.announce_text_ar || 'توصيل مجاني للطلبات فوق 5000 د.ج' %>"></div>
+    <div class="form-group"><label>Text (French)</label><input type="text" name="announce_text_fr" value="<%= settings.announce_text_fr || 'Livraison gratuite pour les commandes de plus de 5000 DA' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Text (English)</label><input type="text" name="announce_text_en" value="<%= settings.announce_text_en || 'Free delivery for orders over 5000 DZD' %>"></div>
+    <div class="form-group"><label>Sub Text (Arabic) <small>second line</small></label><input type="text" name="announce_sub_ar" value="<%= settings.announce_sub_ar || 'الدفع عند الاستلام' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Sub Text (French)</label><input type="text" name="announce_sub_fr" value="<%= settings.announce_sub_fr || 'Paiement à la livraison' %>"></div>
+    <div class="form-group"><label>Sub Text (English)</label><input type="text" name="announce_sub_en" value="<%= settings.announce_sub_en || 'Cash on delivery' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Background Color</label><input type="color" name="announce_bg" value="<%= settings.announce_bg || '#004d26' %>"></div>
+    <div class="form-group"><label>Text Color</label><input type="color" name="announce_color" value="<%= settings.announce_color || '#ffffff' %>"></div>
+  </div>
+
+  <h3 class="form-section-title"><i class="fas fa-wpforms"></i> Lead Form (Order Form)</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Title (Arabic)</label><input type="text" name="lead_title_ar" value="<%= settings.lead_title_ar || 'أكمل طلبك الآن' %>"></div>
+    <div class="form-group"><label>Title (French)</label><input type="text" name="lead_title_fr" value="<%= settings.lead_title_fr || 'Complétez votre commande' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Title (English)</label><input type="text" name="lead_title_en" value="<%= settings.lead_title_en || 'Complete Your Order' %>"></div>
+    <div class="form-group"><label>Button Text (Arabic)</label><input type="text" name="lead_btn_ar" value="<%= settings.lead_btn_ar || 'تأكيد الطلب' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Button Text (French)</label><input type="text" name="lead_btn_fr" value="<%= settings.lead_btn_fr || 'Confirmer' %>"></div>
+    <div class="form-group"><label>Button Text (English)</label><input type="text" name="lead_btn_en" value="<%= settings.lead_btn_en || 'Confirm Order' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Background Color</label><input type="color" name="lead_bg_color" value="<%= settings.lead_bg_color || '#ffffff' %>"></div>
+    <div class="form-group"><label>Border Color</label><input type="color" name="lead_border_color" value="<%= settings.lead_border_color || '#e8f5e9' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Title Color</label><input type="color" name="lead_title_color" value="<%= settings.lead_title_color || '#004d26' %>"></div>
+    <div class="form-group"><label>Text Color</label><input type="color" name="lead_text_color" value="<%= settings.lead_text_color || '#1a1a2e' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Button Color</label><input type="color" name="lead_btn_color" value="<%= settings.lead_btn_color || '#D21034' %>"></div>
+    <div class="form-group"><label>Button Text Color</label><input type="color" name="lead_btn_text_color" value="<%= settings.lead_btn_text_color || '#ffffff' %>"></div>
+  </div>
+  <div class="form-check"><input type="checkbox" name="lead_show_name" value="1" <%= settings.lead_show_name !== '0' ? 'checked' : '' %>> <label>Show Name Field</label></div>
+  <div class="form-check"><input type="checkbox" name="lead_show_phone" value="1" <%= settings.lead_show_phone !== '0' ? 'checked' : '' %>> <label>Show Phone Field</label></div>
+  <div class="form-check"><input type="checkbox" name="lead_show_wilaya" value="1" <%= settings.lead_show_wilaya !== '0' ? 'checked' : '' %>> <label>Show Wilaya Field</label></div>
+  <div class="form-check"><input type="checkbox" name="lead_show_commune" value="1" <%= settings.lead_show_commune !== '0' ? 'checked' : '' %>> <label>Show Commune Field</label></div>
+  <div class="form-check"><input type="checkbox" name="lead_show_delivery_type" value="1" <%= settings.lead_show_delivery_type !== '0' ? 'checked' : '' %>> <label>Show Delivery Type (Home/Office)</label></div>
+  <div class="form-check"><input type="checkbox" name="lead_show_address" value="1" <%= settings.lead_show_address !== '0' ? 'checked' : '' %>> <label>Show Address Field</label></div>
+
+  <!-- Smart Offers Cards -->
+  <h3 class="form-section-title"><i class="fas fa-tags"></i> Smart Offer Cards</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Section Title (Arabic)</label><input type="text" name="offer_title_ar" value="<%= settings.offer_title_ar || 'اختر العرض المناسب' %>"></div>
+    <div class="form-group"><label>Section Title (French)</label><input type="text" name="offer_title_fr" value="<%= settings.offer_title_fr || 'Choisissez l\'offre' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Section Title (English)</label><input type="text" name="offer_title_en" value="<%= settings.offer_title_en || 'Choose your offer' %>"></div>
+    <div class="form-group"><label>Badge Text "Save" (Arabic)</label><input type="text" name="offer_badge_ar" value="<%= settings.offer_badge_ar || 'وفر' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Badge Text "Save" (French)</label><input type="text" name="offer_badge_fr" value="<%= settings.offer_badge_fr || 'Économisez' %>"></div>
+    <div class="form-group"><label>Badge Text "Save" (English)</label><input type="text" name="offer_badge_en" value="<%= settings.offer_badge_en || 'Save' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Card Border Color (selected)</label><input type="color" name="offer_border_color" value="<%= settings.offer_border_color || '#006633' %>"></div>
+    <div class="form-group"><label>Card Selected Background</label><input type="color" name="offer_bg_color" value="<%= settings.offer_bg_color || '#e8f5e9' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Badge Background Color</label><input type="color" name="offer_badge_bg" value="<%= settings.offer_badge_bg || '#D21034' %>"></div>
+    <div class="form-group"><label>Badge Text Color</label><input type="color" name="offer_badge_color" value="<%= settings.offer_badge_color || '#ffffff' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Default Card Text Color</label><input type="color" name="offer_text_color" value="<%= settings.offer_text_color || '#1a1a2e' %>"></div>
+    <div class="form-group"><label>Single Item Text</label><input type="text" name="offer_single_ar" value="<%= settings.offer_single_ar || 'قطعة واحدة' %>" placeholder="Arabic"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Single Item (French)</label><input type="text" name="offer_single_fr" value="<%= settings.offer_single_fr || '1 article' %>" placeholder="French"></div>
+    <div class="form-group"><label>Single Item (English)</label><input type="text" name="offer_single_en" value="<%= settings.offer_single_en || 'Single item' %>" placeholder="English"></div>
+  </div>
+
+  <h3 class="form-section-title"><i class="fas fa-hand-pointer"></i> Buy Now Button</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Button Color</label><input type="color" name="buy_btn_color" value="<%= settings.buy_btn_color || '#D21034' %>"></div>
+    <div class="form-group"><label>Button Text Color</label><input type="color" name="buy_btn_text_color" value="<%= settings.buy_btn_text_color || '#ffffff' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Text (Arabic)</label><input type="text" name="buy_btn_text_ar" value="<%= settings.buy_btn_text_ar || 'اشتري الآن' %>"></div>
+    <div class="form-group"><label>Text (French)</label><input type="text" name="buy_btn_text_fr" value="<%= settings.buy_btn_text_fr || 'Acheter maintenant' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Text (English)</label><input type="text" name="buy_btn_text_en" value="<%= settings.buy_btn_text_en || 'Buy Now' %>"></div>
+    <div class="form-group"><label>Border Radius (px)</label><input type="number" name="buy_btn_radius" value="<%= settings.buy_btn_radius || '50' %>"></div>
+  </div>
+
+  <h3 class="form-section-title"><i class="fas fa-palette"></i> Colors</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Primary Color</label><input type="color" name="primary_color" value="<%= settings.primary_color || '#006633' %>"></div>
+    <div class="form-group"><label>Primary Dark</label><input type="color" name="primary_dark" value="<%= settings.primary_dark || '#004d26' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Accent Color</label><input type="color" name="accent_color" value="<%= settings.accent_color || '#D21034' %>"></div>
+    <div class="form-group"><label>Accent Dark</label><input type="color" name="accent_dark" value="<%= settings.accent_dark || '#a60d29' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Header Background</label><input type="color" name="header_bg" value="<%= settings.header_bg || '#ffffff' %>"></div>
+    <div class="form-group"><label>Header Text Color</label><input type="color" name="header_color" value="<%= settings.header_color || '#1a1a2e' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Footer Background</label><input type="color" name="footer_bg" value="<%= settings.footer_bg || '#004d26' %>"></div>
+    <div class="form-group"><label>Footer Text Color</label><input type="color" name="footer_color" value="<%= settings.footer_color || '#ffffff' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Button Text Color</label><input type="color" name="btn_color" value="<%= settings.btn_color || '#ffffff' %>"></div>
+    <div class="form-group"><label>Button Border Radius (px)</label><input type="number" name="btn_radius" value="<%= settings.btn_radius || '8' %>"></div>
+  </div>
+
+  <!-- Footer Text -->
+  <h3 class="form-section-title"><i class="fas fa-quote-right"></i> Footer Text</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Footer Line 1 (Arabic)</label><input type="text" name="footer_line1_ar" value="<%= settings.footer_line1_ar || 'الدفع عند الاستلام' %>"></div>
+    <div class="form-group"><label>Footer Line 1 (French)</label><input type="text" name="footer_line1_fr" value="<%= settings.footer_line1_fr || 'Paiement à la livraison' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Footer Line 2 (Arabic)</label><input type="text" name="footer_line2_ar" value="<%= settings.footer_line2_ar || 'ضمان الجودة' %>"></div>
+    <div class="form-group"><label>Footer Line 2 (French)</label><input type="text" name="footer_line2_fr" value="<%= settings.footer_line2_fr || 'Qualité garantie' %>"></div>
+  </div>
+
+  <h3 class="form-section-title"><i class="fas fa-chart-line"></i> Analytics & Marketing</h3>
+  <div class="form-group"><label>Facebook Pixel ID</label><input type="text" name="facebook_pixel" value="<%= settings.facebook_pixel || '' %>"></div>
+  <div class="form-group"><label>TikTok Pixel ID</label><input type="text" name="tiktok_pixel" value="<%= settings.tiktok_pixel || '' %>"></div>
+  <div class="form-group"><label>Google Analytics ID</label><input type="text" name="google_analytics" value="<%= settings.google_analytics || '' %>"></div>
+  <div class="form-group"><label>Meta Conversion API Token</label><input type="text" name="meta_conversion_api" value="<%= settings.meta_conversion_api || '' %>"></div>
+  <div class="form-row">
+    <div class="form-group"><label>WhatsApp Number</label><input type="text" name="whatsapp_number" value="<%= settings.whatsapp_number || '213XXXXXXXXX' %>"></div>
+    <div class="form-group"><label>WhatsApp Message</label><input type="text" name="whatsapp_message" value="<%= settings.whatsapp_message || 'Bonjour' %>"></div>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Settings</button>
+  </div>
+</form>

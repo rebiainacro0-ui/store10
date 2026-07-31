@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %>Admin | DZ Store</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="admin-body">
+  <div class="admin-wrapper">
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <a href="/admin" class="sidebar-logo">DZ Store Admin</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="<%= path === '/admin' || path === '/admin/' ? 'active' : '' %>">
+          <i class="fas fa-tachometer-alt nav-icon"></i> <span>Dashboard</span>
+        </a>
+        <a href="/admin/products" class="<%= path && path.startsWith('/admin/products') ? 'active' : '' %>">
+          <i class="fas fa-box nav-icon"></i> <span>Products</span>
+        </a>
+        <a href="/admin/orders" class="<%= path && path.startsWith('/admin/orders') && !path.includes('/print') && !path.includes('/invoice') ? 'active' : '' %>">
+          <i class="fas fa-shopping-bag nav-icon"></i> <span>Orders</span>
+        </a>
+        <a href="/admin/customers" class="<%= path && path.startsWith('/admin/customers') ? 'active' : '' %>">
+          <i class="fas fa-users nav-icon"></i> <span>Customers</span>
+        </a>
+        <a href="/admin/categories" class="<%= path && path.startsWith('/admin/categories') ? 'active' : '' %>">
+          <i class="fas fa-tags nav-icon"></i> <span>Categories</span>
+        </a>
+        <a href="/admin/shipping" class="<%= path && path.startsWith('/admin/shipping') ? 'active' : '' %>">
+          <i class="fas fa-truck nav-icon"></i> <span>Shipping</span>
+        </a>
+        <a href="/admin/shipping/zones" class="<%= path && path.includes('shipping/zones') ? 'active' : '' %>">
+          <i class="fas fa-layer-group nav-icon"></i> <span>Shipping Zones</span>
+        </a>
+        <a href="/admin/delivery-apis" class="<%= path && path.startsWith('/admin/delivery-apis') ? 'active' : '' %>">
+          <i class="fas fa-truck nav-icon"></i> <span>Delivery APIs</span>
+        </a>
+        <a href="/admin/reviews" class="<%= path && path.startsWith('/admin/reviews') ? 'active' : '' %>">
+          <i class="fas fa-star nav-icon"></i> <span>Reviews</span>
+        </a>
+        <a href="/admin/coupons" class="<%= path && path.startsWith('/admin/coupons') ? 'active' : '' %>">
+          <i class="fas fa-percent nav-icon"></i> <span>Coupons</span>
+        </a>
+        <a href="/admin/flash-sales" class="<%= path && path.startsWith('/admin/flash-sales') ? 'active' : '' %>">
+          <i class="fas fa-bolt nav-icon"></i> <span>Flash Sales</span>
+        </a>
+        <a href="/admin/pages" class="<%= path && path.startsWith('/admin/pages') ? 'active' : '' %>">
+          <i class="fas fa-file nav-icon"></i> <span>Pages</span>
+        </a>
+        <a href="/admin/blog" class="<%= path && path.startsWith('/admin/blog') ? 'active' : '' %>">
+          <i class="fas fa-blog nav-icon"></i> <span>Blog</span>
+        </a>
+        <a href="/admin/inventory" class="<%= path && path.startsWith('/admin/inventory') ? 'active' : '' %>">
+          <i class="fas fa-warehouse nav-icon"></i> <span>Inventory</span>
+        </a>
+        <a href="/admin/settings" class="<%= path && path.startsWith('/admin/settings') ? 'active' : '' %>">
+          <i class="fas fa-cog nav-icon"></i> <span>Settings</span>
+        </a>
+        <a href="/admin/logout" class="logout-link">
+          <i class="fas fa-sign-out-alt nav-icon"></i> <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <h1><%= typeof title !== 'undefined' ? title : 'Dashboard' %></h1>
+        <div class="topbar-user"><%= session && session.username ? session.username : 'Admin' %></div>
+      </header>
+      <div class="admin-content">
+        <%- body %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

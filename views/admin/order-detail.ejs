@@ -1,0 +1,100 @@
+<div class="order-top">
+  <div>
+    <h2 style="font-size:1.2rem;font-weight:700">Order <%= order.order_number %></h2>
+    <span class="order-date"><%= new Date(order.created_at).toLocaleString() %></span>
+  </div>
+  <div class="action-buttons">
+    <a href="/admin/orders/print/<%= order.id %>" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-print"></i> Print</a>
+    <a href="/admin/orders/invoice/<%= order.id %>" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-file-invoice"></i> Invoice</a>
+    <form action="/admin/orders/<%= order.id %>/send-to-courier" method="POST" style="display:inline">
+      <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Send this order to the delivery company?')"><i class="fas fa-paper-plane"></i> Send to Courier</button>
+    </form>
+  </div>
+</div>
+
+<div class="order-detail-grid">
+  <div class="detail-card">
+    <h3><i class="fas fa-user"></i> Customer</h3>
+    <p><strong><%= order.full_name %></strong></p>
+    <p><i class="fas fa-phone"></i> <%= order.phone %></p>
+    <% if (order.phone2) { %><p><i class="fas fa-phone"></i> <%= order.phone2 %></p><% } %>
+  </div>
+  <div class="detail-card">
+    <h3><i class="fas fa-map-marker-alt"></i> Delivery</h3>
+    <p><%= order.wilaya_fr || order.wilaya_ar %></p>
+    <% if (order.commune_fr) { %><p><%= order.commune_fr %></p><% } %>
+    <p><%= order.delivery_address %></p>
+    <p><span class="badge badge-info"><%= order.delivery_type === 'home' ? 'Home' : 'Office' %></span></p>
+  </div>
+  <div class="detail-card">
+    <h3><i class="fas fa-credit-card"></i> Payment</h3>
+    <p><strong><%= order.payment_method.toUpperCase() %></strong></p>
+    <p>Subtotal: <%= order.subtotal.toFixed(2) %> DA</p>
+    <p>Shipping: <%= order.shipping > 0 ? order.shipping.toFixed(2) + ' DA' : 'Free' %></p>
+    <% if (order.discount > 0) { %><p>Discount: -<%= order.discount.toFixed(2) %> DA</p><% } %>
+    <p><strong>Total: <%= order.total.toFixed(2) %> DA</strong></p>
+  </div>
+  <div class="detail-card">
+    <h3><i class="fas fa-truck"></i> Status</h3>
+    <p><span class="status-badge <%= order.status %>" style="font-size:0.95rem"><%= order.status %></span></p>
+    <% if (order.delivery_company) { %><p>Company: <%= order.delivery_company %></p><% } %>
+    <% if (order.tracking_url) { %><p><a href="<%= order.tracking_url %>" target="_blank">Track</a></p><% } %>
+  </div>
+</div>
+
+<form action="/admin/orders/<%= order.id %>/status" method="POST" class="admin-form">
+  <h3 class="form-section-title"><i class="fas fa-edit"></i> Update Order</h3>
+  <div class="form-row triple">
+    <div class="form-group">
+      <label>Status</label>
+      <select name="status">
+        <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
+        <option value="confirmed" <%= order.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+        <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
+        <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
+        <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Delivery Company</label>
+      <input type="text" name="delivery_company" value="<%= order.delivery_company || '' %>" placeholder="Yalidine, Maystro, etc.">
+    </div>
+    <div class="form-group">
+      <label>Tracking URL</label>
+      <input type="text" name="tracking_url" value="<%= order.tracking_url || '' %>">
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Admin Notes</label>
+    <textarea name="admin_notes" rows="2"><%= order.admin_notes || '' %></textarea>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update Order</button>
+  </div>
+</form>
+
+<div class="table-container" style="margin-top:16px">
+  <div style="padding:16px;border-bottom:1px solid var(--gray-200)"><h3 style="font-size:1rem;font-weight:700">Order Items</h3></div>
+  <table class="data-table">
+    <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+    <tbody>
+      <% items.forEach(function(item) { %>
+        <tr><td><%= item.product_name_fr || item.product_name_ar %><% if (item.options && item.options.length > 0) { %><br><small style="color:var(--gray-500)"><% item.options.forEach(function(o,oi){ %><%= oi > 0 ? ', ' : '' %><%= o.option_name %>: <%= o.value_name %><% }); %></small><% } %></td><td><%= item.price.toFixed(2) %> DA</td><td><%= item.quantity %></td><td><%= item.total.toFixed(2) %> DA</td></tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<% if (typeof history !== 'undefined' && history.length > 0) { %>
+<div class="table-container" style="margin-top:16px">
+  <div style="padding:16px;border-bottom:1px solid var(--gray-200)"><h3 style="font-size:1rem;font-weight:700">Status History</h3></div>
+  <table class="data-table">
+    <thead><tr><th>Status</th><th>Note</th><th>Date</th></tr></thead>
+    <tbody>
+      <% history.forEach(function(h) { %>
+        <tr><td><span class="status-badge <%= h.status %>"><%= h.status %></span></td><td><%= h.note || '' %></td><td><%= new Date(h.created_at).toLocaleString() %></td></tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>

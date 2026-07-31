@@ -1,0 +1,462 @@
+<section class="section" style="padding-top:16px;padding-bottom:80px">
+  <div class="container">
+    <% var finalPrice = flashSale ? product.price * (1 - flashSale.discount_percent/100) : product.price; %>
+    <div class="product-detail">
+      <!-- Gallery -->
+      <div class="product-gallery">
+        <div class="product-main-image">
+          <% if (product.image_url) { %>
+            <img id="mainProductImage" src="<%= product.image_url %>" alt="<%= product['name_' + lang] %>">
+          <% } else { %>
+            <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#ccc;font-size:5rem"><i class="fas fa-box"></i></div>
+          <% } %>
+        </div>
+        <% if (images && images.length > 0) { %>
+          <div class="product-thumbnails">
+            <% if (product.image_url) { %>
+              <div class="product-thumb active" data-image="<%= product.image_url %>"><img src="<%= product.image_url %>" alt=""></div>
+            <% } %>
+            <% images.forEach(function(img) { %>
+              <div class="product-thumb" data-image="<%= img.image_url %>"><img src="<%= img.image_url %>" alt=""></div>
+            <% }) %>
+          </div>
+        <% } %>
+        <% if (product.video_url) { %>
+          <div style="margin-top:12px">
+            <iframe src="<%= product.video_url %>" style="width:100%;aspect-ratio:16/9;border-radius:var(--radius);border:none" allowfullscreen></iframe>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Info + Form -->
+      <div class="product-info-section">
+        <style>
+          .offer-card.selected { border-color:<%= settings.offer_border_color || '#006633' %> !important; background:<%= settings.offer_bg_color || '#e8f5e9' %> !important; }
+        </style>
+        <h1 style="font-size:1.3rem;margin-bottom:8px"><%= product['name_' + lang] %></h1>
+
+        <!-- Price -->
+        <% if (product.show_price !== 0) { %>
+        <div class="product-price-large" style="margin-bottom:12px">
+          <span class="current-price" style="font-size:1.5rem"><%= finalPrice.toFixed(2) %> DA</span>
+          <% if (product.compare_price) { %>
+            <span class="compare-price"><%= product.compare_price.toFixed(2) %> DA</span>
+            <span class="discount-pct">-<%= Math.round((1 - product.price/product.compare_price)*100) %>%</span>
+          <% } %>
+        </div>
+        <% } %>
+
+        <% if (flashSale) { %>
+          <div class="flash-sale-banner" style="margin-bottom:12px">
+            <h3><i class="fas fa-bolt"></i> <%= lang === 'ar' ? 'تخفيض وميض' : lang === 'fr' ? 'Vente Flash' : 'Flash Sale' %></h3>
+            <div class="flash-countdown" data-end="<%= flashSale.end_date %>">
+              <div class="time-block"><span class="num hours">00</span><span class="label"><%= lang === 'ar' ? 'ساعة' : 'h' %></span></div>
+              <div class="time-block"><span class="num mins">00</span><span class="label"><%= lang === 'ar' ? 'دقيقة' : 'm' %></span></div>
+              <div class="time-block"><span class="num secs">00</span><span class="label"><%= lang === 'ar' ? 'ثانية' : 's' %></span></div>
+            </div>
+          </div>
+        <% } %>
+
+        <% if (product.stock > 0 && product.stock <= 10) { %>
+          <div class="product-stock-indicator low"><i class="fas fa-clock"></i> <%= lang === 'ar' ? 'فقط ' + product.stock + ' قطع متبقية' : lang === 'fr' ? 'Seulement ' + product.stock + ' restants' : 'Only ' + product.stock + ' left in stock' %></div>
+        <% } %>
+
+
+        <!-- Description -->
+        <div class="product-description"><%= product['description_' + lang] %></div>
+
+        <% if (product['benefits_' + lang]) { %>
+          <div class="product-section"><h3><%= lang === 'ar' ? 'المميزات' : lang === 'fr' ? 'Avantages' : 'Benefits' %></h3><div><%= product['benefits_' + lang] %></div></div>
+        <% } %>
+        <% if (product['specifications_' + lang]) { %>
+          <div class="product-section"><h3><%= lang === 'ar' ? 'المواصفات' : lang === 'fr' ? 'Spécifications' : 'Specifications' %></h3><div><%= product['specifications_' + lang] %></div></div>
+        <% } %>
+        <% if (product['how_to_use_' + lang]) { %>
+          <div class="product-section"><h3><%= lang === 'ar' ? 'طريقة الاستخدام' : lang === 'fr' ? 'Comment utiliser' : 'How to Use' %></h3><div><%= product['how_to_use_' + lang] %></div></div>
+        <% } %>
+
+        <!-- Smart Options -->
+        <% if (options && options.length > 0) { %>
+          <div class="product-section" style="margin-bottom:16px">
+            <h3 style="font-size:1rem;margin-bottom:10px"><%= lang === 'ar' ? 'خيارات إضافية' : lang === 'fr' ? 'Options supplémentaires' : 'Additional Options' %></h3>
+            <div class="smart-options">
+              <% options.forEach(function(opt, oi){ %>
+                <div class="option-row" style="margin-bottom:10px">
+                  <label style="font-weight:700;font-size:0.85rem;display:block;margin-bottom:4px"><%= opt['name_' + lang] %><% if (opt.required) { %><span style="color:red">*</span><% } %></label>
+                  <% if (opt.type === 'select') { %>
+                    <select name="options[<%= opt.id %>]" class="option-select" data-optid="<%= opt.id %>" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:6px;font-size:0.9rem" <%= opt.required ? 'required' : '' %>>
+                      <option value=""><%= lang === 'ar' ? 'اختر' : lang === 'fr' ? 'Choisir' : 'Select' %></option>
+                      <% opt.values.forEach(function(v){ %>
+                        <option value="<%= v.id %>" data-price="<%= v.price_adjustment %>"><%= v['value_' + lang] %><% if (v.price_adjustment > 0) { %> (+<%= v.price_adjustment.toFixed(2) %> DA)<% } else if (v.price_adjustment < 0) { %> (<%= v.price_adjustment.toFixed(2) %> DA)<% } %></option>
+                      <% }) %>
+                    </select>
+                  <% } else { %>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                      <% opt.values.forEach(function(v){ %>
+                        <label class="option-pill"><input type="radio" name="options[<%= opt.id %>]" value="<%= v.id %>" data-price="<%= v.price_adjustment %>" <%= opt.required ? 'required' : '' %>> <span><%= v['value_' + lang] %><% if (v.price_adjustment > 0) { %> +<%= v.price_adjustment.toFixed(2) %> DA<% } else if (v.price_adjustment < 0) { %> <%= v.price_adjustment.toFixed(2) %> DA<% } %></span></label>
+                      <% }) %>
+                    </div>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Lead Form -->
+        <% if (product.stock > 0) { %>
+          <%
+          var leadTitle = settings['lead_title_' + lang] || (lang === 'ar' ? 'أكمل طلبك الآن' : lang === 'fr' ? 'Complétez votre commande' : 'Complete Your Order');
+          var leadBtnText = settings['lead_btn_' + lang] || (lang === 'ar' ? 'تأكيد الطلب' : lang === 'fr' ? 'Confirmer' : 'Confirm Order');
+          var leadBg = settings.lead_bg_color || '#ffffff';
+          var leadBorder = settings.lead_border_color || '#e8f5e9';
+          var leadTitleColor = settings.lead_title_color || '#004d26';
+          var leadTextColor = settings.lead_text_color || '#1a1a2e';
+          var leadBtnColor = settings.lead_btn_color || '#D21034';
+          var leadBtnTextColor = settings.lead_btn_text_color || '#ffffff';
+          var showName = settings.lead_show_name !== '0';
+          var showPhone = settings.lead_show_phone !== '0';
+          var showWilaya = settings.lead_show_wilaya !== '0';
+          var showCommune = settings.lead_show_commune !== '0';
+          var showDelType = settings.lead_show_delivery_type !== '0';
+          var showAddress = settings.lead_show_address !== '0';
+          %>
+          <form action="/product-order" method="POST" class="lead-form" id="leadForm" style="background:<%= leadBg %>;border-color:<%= leadBorder %>;color:<%= leadTextColor %>">
+            <input type="hidden" name="product_id" value="<%= product.id %>">
+            <input type="hidden" name="quantity" value="1" id="qtyInput">
+            <h3 class="lead-form-title" style="color:<%= leadTitleColor %>"><%= leadTitle %></h3>
+            <div class="lead-form-fields">
+              <% if (showName) { %>
+              <div class="lead-field">
+                <label><%= lang === 'ar' ? 'الاسم الكامل' : lang === 'fr' ? 'Nom complet' : 'Full Name' %></label>
+                <input type="text" name="full_name" required placeholder="<%= lang === 'ar' ? 'أحمد بن محمد' : 'Ahmed Ben Mohamed' %>">
+              </div>
+              <% } %>
+              <% if (showPhone) { %>
+              <div class="lead-field">
+                <label><%= lang === 'ar' ? 'رقم الهاتف' : lang === 'fr' ? 'Téléphone' : 'Phone' %></label>
+                <input type="tel" name="phone" required placeholder="05XX XX XX XX" pattern="[0-9]{10}" inputmode="numeric">
+              </div>
+              <% } %>
+              <% if (showWilaya) { %>
+              <div class="lead-field">
+                <label><%= lang === 'ar' ? 'الولاية' : lang === 'fr' ? 'Wilaya' : 'Wilaya' %></label>
+                <select name="wilaya_code" class="lead-wilaya" required>
+                  <option value=""><%= lang === 'ar' ? 'اختر ولايتك' : lang === 'fr' ? 'Choisissez' : 'Select' %></option>
+                  <% wilayas.forEach(function(w) { %>
+                    <option value="<%= w.code %>"><%= w['name_' + lang] %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <% } %>
+              <% if (showCommune) { %>
+              <div class="lead-field">
+                <label><%= lang === 'ar' ? 'البلدية' : lang === 'fr' ? 'Commune' : 'Commune' %></label>
+                <select name="commune_id" class="lead-commune" required disabled>
+                  <option value=""><%= lang === 'ar' ? 'اختر ولايتك أولاً' : lang === 'fr' ? 'Choisissez wilaya d\'abord' : 'Select wilaya first' %></option>
+                </select>
+              </div>
+              <% } %>
+              <% if (showDelType) { %>
+              <div class="lead-field">
+                <label><%= lang === 'ar' ? 'نوع التوصيل' : lang === 'fr' ? 'Type de livraison' : 'Delivery Type' %></label>
+                <div style="display:flex;gap:10px">
+                  <label class="delivery-option selected"><input type="radio" name="delivery_type" value="home" checked> 🏠 <%= lang === 'ar' ? 'المنزل' : lang === 'fr' ? 'Domicile' : 'Home' %></label>
+                  <label class="delivery-option"><input type="radio" name="delivery_type" value="office"> 🏢 <%= lang === 'ar' ? 'المكتب' : lang === 'fr' ? 'Bureau' : 'Office' %></label>
+                </div>
+              </div>
+              <% } %>
+              <% if (showAddress) { %>
+              <div class="lead-field">
+                <label><%= lang === 'ar' ? 'العنوان' : lang === 'fr' ? 'Adresse' : 'Address' %></label>
+                <input type="text" name="delivery_address" required placeholder="<%= lang === 'ar' ? '15 شارع فلسطين، رقم 3' : '15 Rue Palestine, N°3' %>">
+              </div>
+              <% } %>
+            </div>
+            <% if (offers && offers.length > 0) { %>
+            <%
+              var offerTitle = settings['offer_title_' + lang] || (lang === 'ar' ? 'اختر العرض المناسب' : lang === 'fr' ? 'Choisissez l\'offre' : 'Choose your offer');
+              var offerBadgeText = settings['offer_badge_' + lang] || (lang === 'ar' ? 'وفر' : lang === 'fr' ? 'Économisez' : 'Save');
+              var offerSingleText = settings['offer_single_' + lang] || (lang === 'ar' ? 'قطعة واحدة' : lang === 'fr' ? '1 article' : 'Single item');
+              var offerBorderColor = settings.offer_border_color || '#006633';
+              var offerBgColor = settings.offer_bg_color || '#e8f5e9';
+              var offerBadgeBg = settings.offer_badge_bg || '#D21034';
+              var offerBadgeColor = settings.offer_badge_color || '#ffffff';
+              var offerTextColor = settings.offer_text_color || '#1a1a2e';
+            %>
+            <div class="lead-offers">
+              <label style="font-weight:700;font-size:0.85rem;display:block;margin-bottom:6px;color:<%= offerTextColor %>"><%= offerTitle %></label>
+              <div class="offer-card selected" data-qty="1" data-type="" data-freeqty="0" data-pct="0" style="color:<%= offerTextColor %>">
+                <input type="radio" name="selected_offer" value="1" checked hidden>
+                <span class="offer-card-title"><%= offerSingleText %></span>
+                <span class="offer-card-price" style="color:<%= offerTextColor %>"><%= finalPrice.toFixed(2) %> DA</span>
+              </div>
+              <% offers.forEach(function(of) { %>
+                <% var oLabel = of['offer_label_' + lang] || (function(){
+                  if (of.type === 'bogo') return lang === 'ar' ? '🎉 اشتري ' + of.min_qty + ' واحصل على ' + of.free_qty + ' مجاناً' : (lang === 'fr' ? '🎉 Achetez ' + of.min_qty + ', obtenez ' + of.free_qty + ' gratuit' : '🎉 Buy ' + of.min_qty + ' Get ' + of.free_qty + ' Free');
+                  if (of.type === 'free_shipping') return lang === 'ar' ? '🎁 توصيل مجاني عند شراء ' + of.min_qty + ' قطع' : (lang === 'fr' ? '🎁 Livraison gratuite pour ' + of.min_qty + '+ articles' : '🎁 Free Shipping on ' + of.min_qty + '+ items');
+                  if (of.type === 'percent') return lang === 'ar' ? '🔥 خصم ' + of.discount_percent + '%' : (lang === 'fr' ? '🔥 ' + of.discount_percent + '% de réduction' : '🔥 ' + of.discount_percent + '% off');
+                  return '';
+                })(); %>
+                <div class="offer-card" data-qty="<%= of.min_qty %>" data-type="<%= of.type %>" data-minqty="<%= of.min_qty %>" data-freeqty="<%= of.free_qty %>" data-pct="<%= of.discount_percent %>" style="color:<%= offerTextColor %>;border-color:var(--gray-300);background:#fff">
+                  <input type="radio" name="selected_offer" value="<%= of.min_qty %>" hidden>
+                  <span class="offer-card-title"><%= oLabel %></span>
+                  <span class="offer-card-badge" style="background:<%= offerBadgeBg %>;color:<%= offerBadgeColor %>"><%= offerBadgeText %></span>
+                </div>
+              <% }) %>
+            </div>
+            <% } %>
+            <div class="lead-summary">
+              <div class="summary-line"><span><%= lang === 'ar' ? 'المنتج' : lang === 'fr' ? 'Produit' : 'Product' %></span><span id="unitPriceDisplay"><%= finalPrice.toFixed(2) %> DA</span></div>
+              <div class="summary-line"><span><%= lang === 'ar' ? 'الكمية' : lang === 'fr' ? 'Qté' : 'Qty' %></span><span id="qtyDisplay">1</span></div>
+              <div class="summary-line" id="offerDiscountRow" style="display:none;color:#D21034;font-weight:700"><span><%= lang === 'ar' ? 'الخصم' : lang === 'fr' ? 'Remise' : 'Discount' %></span><span id="offerDiscountDisplay">-0 DA</span></div>
+              <% if (product.show_shipping !== 0) { %>
+              <div class="summary-line"><span><%= lang === 'ar' ? 'التوصيل' : lang === 'fr' ? 'Livraison' : 'Shipping' %></span><span id="leadShippingDisplay"><%= lang === 'ar' ? 'سيحسب لاحقاً' : lang === 'fr' ? 'À calculer' : 'Calculated later' %></span></div>
+              <% } %>
+              <div class="lead-total-line">
+                <span><%= lang === 'ar' ? 'الإجمالي' : lang === 'fr' ? 'Total' : 'Total' %></span>
+                <span class="lead-total-price" id="leadTotalDisplay"><%= finalPrice.toFixed(2) %> DA</span>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-lg btn-block lead-submit" style="background:<%= leadBtnColor %>;color:<%= leadBtnTextColor %>"><i class="fas fa-check-circle"></i> <%= leadBtnText %></button>
+          </form>
+          <% if (bottomImages && bottomImages.length > 0) { %>
+            <div class="lead-bottom-gallery">
+              <% bottomImages.forEach(function(bi) { %>
+                <img src="<%= bi.image_url %>" alt="" loading="lazy">
+              <% }) %>
+            </div>
+          <% } %>
+        <% } else { %>
+          <div style="padding:20px;background:var(--red-light);border-radius:var(--radius);color:var(--accent);font-weight:600;text-align:center">
+            <%= lang === 'ar' ? 'المنتج غير متوفر حالياً' : lang === 'fr' ? 'Produit actuellement indisponible' : 'Product currently unavailable' %>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Fixed Buy Button -->
+<% if (product.stock > 0) { %>
+<% var buyText = settings['buy_btn_text_' + lang] || (lang === 'ar' ? 'اشتري الآن' : lang === 'fr' ? 'Acheter maintenant' : 'Buy Now'); %>
+<% var buyColor = settings.buy_btn_color || '#D21034'; %>
+<% var buyTextColor = settings.buy_btn_text_color || '#ffffff'; %>
+<% var buyRadius = settings.buy_btn_radius || '50'; %>
+<a href="#leadForm" class="fixed-buy-btn" style="background:<%= buyColor %>;color:<%= buyTextColor %>;border-radius:<%= buyRadius %>px">
+  <i class="fas fa-bolt"></i> <%= buyText %>
+</a>
+<% } %>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var lang = '<%= lang %>';
+  var basePrice = <%= finalPrice %>;
+  var unitPrice = basePrice;
+  var qty = 1;
+  var showShipping = <%= product.show_shipping !== 0 ? 'true' : 'false' %>;
+  var wilayaSelect = document.querySelector('.lead-wilaya');
+  var communeSelect = document.querySelector('.lead-commune');
+  var deliveryRadios = document.querySelectorAll('input[name="delivery_type"]');
+  var shippingDisplay = document.getElementById('leadShippingDisplay');
+  var totalDisplay = document.getElementById('leadTotalDisplay');
+  var discountDisplay = document.getElementById('offerDiscountDisplay');
+  var discountRow = document.getElementById('offerDiscountRow');
+  var qtyDisplay = document.getElementById('qtyDisplay');
+  var unitPriceDisplay = document.getElementById('unitPriceDisplay');
+  var qtyInput = document.getElementById('qtyInput');
+  var freeText = lang === 'ar' ? 'مجاني' : lang === 'fr' ? 'Gratuit' : 'Free';
+  var laterText = lang === 'ar' ? 'سيحسب لاحقاً' : lang === 'fr' ? 'À calculer' : 'Calculated later';
+
+  // Offers data
+  var offers = <%- JSON.stringify(offers || []) %>;
+
+  function getOptionsPrice() {
+    var extra = 0;
+    document.querySelectorAll('.option-select, input[name^="options\\["]:checked').forEach(function(el){
+      var p = parseFloat(el.dataset.price);
+      if (!isNaN(p)) extra += p;
+    });
+    return extra;
+  }
+
+  function calcOfferDiscount(subtotal, offerType, freeQty, pct) {
+    if (offerType === 'bogo' && freeQty > 0) {
+      return (subtotal / qty) * freeQty;
+    }
+    if (offerType === 'percent' && pct > 0) {
+      return subtotal * (pct / 100);
+    }
+    if (offerType === 'free_shipping') {
+      return -1;
+    }
+    return 0;
+  }
+
+  function getSelectedOffer() {
+    var sel = document.querySelector('.offer-card.selected');
+    if (!sel) return { qty: 1, type: '', freeQty: 0, pct: 0 };
+    return {
+      qty: parseInt(sel.dataset.qty) || parseInt(sel.querySelector('input')?.value) || 1,
+      type: sel.dataset.type || '',
+      freeQty: parseInt(sel.dataset.freeqty) || 0,
+      pct: parseFloat(sel.dataset.pct) || 0
+    };
+  }
+
+  function recalcAll() {
+    var offer = getSelectedOffer();
+    qty = offer.qty;
+    unitPrice = basePrice + getOptionsPrice();
+    var subtotal = unitPrice * qty;
+    var discount = calcOfferDiscount(subtotal, offer.type, offer.freeQty, offer.pct);
+    var isFreeShip = discount === -1;
+    if (isFreeShip) discount = 0;
+    unitPriceDisplay.textContent = unitPrice.toFixed(2) + ' DA';
+    qtyDisplay.textContent = qty;
+    qtyInput.value = qty;
+    if (discount > 0) {
+      discountRow.style.display = '';
+      discountDisplay.textContent = '-' + discount.toFixed(2) + ' DA';
+    } else {
+      discountRow.style.display = 'none';
+    }
+    var afterDiscount = subtotal - discount;
+    updateShipping(afterDiscount, isFreeShip);
+  }
+
+  function getDeliveryType() {
+    var selected = document.querySelector('input[name="delivery_type"]:checked');
+    return selected ? selected.value : 'home';
+  }
+
+  function updateShipping(afterDiscount, isFreeShip) {
+    if (typeof afterDiscount === 'undefined') { var sub = unitPrice * qty; var of = getSelectedOffer(); var d = calcOfferDiscount(sub, of.type, of.freeQty, of.pct); if (d === -1) { d = 0; isFreeShip = true; } afterDiscount = sub - d; }
+    var wCode = wilayaSelect ? wilayaSelect.value : '';
+    var cId = communeSelect ? communeSelect.value : '';
+    var dType = getDeliveryType();
+    if (!showShipping) { shippingDisplay.textContent = ''; totalDisplay.textContent = afterDiscount.toFixed(2) + ' DA'; return; }
+    if (!wCode) { shippingDisplay.textContent = laterText; totalDisplay.textContent = afterDiscount.toFixed(2) + ' DA'; return; }
+    var callback = function(shipping) {
+      if (isFreeShip) shipping = 0;
+      var total = afterDiscount + shipping;
+      shippingDisplay.textContent = shipping > 0 ? shipping.toFixed(2) + ' DA' : freeText;
+      totalDisplay.textContent = total.toFixed(2) + ' DA';
+    };
+    if (cId) {
+      fetch('/api/commune-shipping/' + cId).then(function(r){return r.json()}).then(function(data){
+        var shipping = dType === 'office' && data.shipping_price_office > 0 ? data.shipping_price_office : data.shipping_price;
+        var freeMin = data.free_shipping_min;
+        if (shipping === 0) { fetch('/api/shipping/' + wCode).then(function(r2){return r2.json()}).then(function(wData){
+          var s2 = dType === 'office' && wData.shipping_price_office > 0 ? wData.shipping_price_office : wData.shipping_price;
+          if (wData.free_shipping_min && afterDiscount >= wData.free_shipping_min) s2 = 0;
+          callback(s2);
+        }); } else {
+          if (freeMin && afterDiscount >= freeMin) shipping = 0;
+          callback(shipping);
+        }
+      });
+    } else {
+      fetch('/api/shipping/' + wCode).then(function(r){return r.json()}).then(function(data){
+        var shipping = dType === 'office' && data.shipping_price_office > 0 ? data.shipping_price_office : data.shipping_price;
+        if (data.free_shipping_min && afterDiscount >= data.free_shipping_min) shipping = 0;
+        callback(shipping);
+      });
+    }
+  }
+
+  document.querySelectorAll('.option-select, input[name^="options\\["]').forEach(function(el){ el.addEventListener('change', recalcAll); });
+  var leadOffers = document.querySelector('.lead-offers');
+  if (leadOffers) {
+    leadOffers.addEventListener('click', function(e){
+      var card = e.target.closest('.offer-card');
+      if (!card) return;
+      document.querySelectorAll('.offer-card').forEach(function(c){c.classList.remove('selected')});
+      card.classList.add('selected');
+      var radio = card.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+      recalcAll();
+    });
+  }
+  if (wilayaSelect) {
+    wilayaSelect.addEventListener('change', function(){
+      var code = this.value;
+      communeSelect.innerHTML = '<option value="">' + (lang === 'ar' ? 'جاري التحميل...' : lang === 'fr' ? 'Chargement...' : 'Loading...') + '</option>';
+      communeSelect.disabled = true;
+      if (!code) { recalcAll(); return; }
+      fetch('/api/communes/' + code).then(function(r){return r.json()}).then(function(data){
+        communeSelect.innerHTML = '<option value="">' + (lang === 'ar' ? 'اختر بلديتك' : lang === 'fr' ? 'Choisissez' : 'Select') + '</option>';
+        data.forEach(function(c){
+          var opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.name_fr;
+          communeSelect.appendChild(opt);
+        });
+        communeSelect.disabled = false;
+        recalcAll();
+      });
+    });
+    communeSelect.addEventListener('change', recalcAll);
+  }
+  deliveryRadios.forEach(function(r){ r.addEventListener('change', recalcAll); });
+  document.querySelectorAll('.fixed-buy-btn').forEach(function(b){ b.addEventListener('click', function(e){
+    e.preventDefault();
+    var f = document.getElementById('leadForm');
+    if (f) f.scrollIntoView({behavior:'smooth', block:'start'});
+  }); });
+  document.querySelectorAll('.delivery-option').forEach(function(lbl){
+    lbl.addEventListener('click', function(){
+      document.querySelectorAll('.delivery-option').forEach(function(l){l.classList.remove('selected')});
+      this.classList.add('selected');
+      this.querySelector('input[type="radio"]').checked = true;
+      recalcAll();
+    });
+  });
+
+  var slideImages = [];
+  <% if (product.image_url) { %>slideImages.push('<%= product.image_url %>');<% } %>
+  <% (images || []).forEach(function(img) { %>slideImages.push('<%= img.image_url %>');<% }) %>
+  var slideIdx = 0;
+  var slideTimer = null;
+  var slideGallery = document.querySelector('.product-gallery');
+  if (slideImages.length > 1) {
+    slideTimer = setInterval(function(){
+      slideIdx = (slideIdx + 1) % slideImages.length;
+      var img = document.getElementById('mainProductImage');
+      if (img) img.src = slideImages[slideIdx];
+      document.querySelectorAll('.product-thumb').forEach(function(t,i){
+        t.classList.toggle('active', i === slideIdx);
+      });
+    }, 3000);
+    if (slideGallery) {
+      slideGallery.addEventListener('mouseenter', function(){ if (slideTimer) clearInterval(slideTimer); });
+      slideGallery.addEventListener('mouseleave', function(){
+        slideTimer = setInterval(function(){
+          slideIdx = (slideIdx + 1) % slideImages.length;
+          var img = document.getElementById('mainProductImage');
+          if (img) img.src = slideImages[slideIdx];
+          document.querySelectorAll('.product-thumb').forEach(function(t,i){
+            t.classList.toggle('active', i === slideIdx);
+          });
+        }, 3000);
+      });
+    }
+    document.querySelectorAll('.product-thumb').forEach(function(t){
+      t.addEventListener('click', function(){
+        var idx = Array.from(t.parentNode.children).indexOf(t);
+        slideIdx = idx;
+        if (slideTimer) clearInterval(slideTimer);
+        slideTimer = setInterval(function(){
+          slideIdx = (slideIdx + 1) % slideImages.length;
+          var img = document.getElementById('mainProductImage');
+          if (img) img.src = slideImages[slideIdx];
+          document.querySelectorAll('.product-thumb').forEach(function(th,i){
+            th.classList.toggle('active', i === slideIdx);
+          });
+        }, 3000);
+      });
+    });
+  }
+  recalcAll();
+});
+</script>

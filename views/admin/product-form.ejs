@@ -1,0 +1,213 @@
+<form action="/admin/products/save" method="POST" class="admin-form" enctype="multipart/form-data">
+  <% if (product) { %><input type="hidden" name="id" value="<%= product.id %>"><% } %>
+
+  <h3 class="form-section-title"><i class="fas fa-info-circle"></i> Basic Information</h3>
+  <div class="form-row">
+    <div class="form-group"><label>Product Name</label><input type="text" id="productName" name="name_ar" value="<%= product ? product.name_ar : '' %>" required oninput="document.getElementById('slug').value=this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')"></div>
+    <div class="form-group"><label>Slug</label><input type="text" id="slug" name="slug" value="<%= product ? product.slug : '' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Category</label><select name="category_id"><option value="">No category</option><% categories.forEach(function(c) { %><option value="<%= c.id %>" <%= product && product.category_id === c.id ? 'selected' : '' %>><%= c.name_fr %></option><% }) %></select></div>
+  </div>
+
+  <h3 class="form-section-title"><i class="fas fa-align-left"></i> Description</h3>
+  <div class="form-group"><label>Description</label><textarea name="description_ar"><%= product ? product.description_ar : '' %></textarea></div>
+
+  <h3 class="form-section-title"><i class="fas fa-images"></i> Landing Page Images <small style="font-weight:400;color:var(--gray-400)">(vertical gallery below order form)</small></h3>
+  <div class="form-group">
+    <div style="display:flex;gap:8px;margin-bottom:4px">
+      <input type="file" id="bottomGalleryInput" accept="image/*" multiple style="flex:1;padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:0.85rem">
+      <button type="button" id="uploadBottomGalleryBtn" class="btn btn-sm btn-primary"><i class="fas fa-upload"></i> Upload All</button>
+    </div>
+    <div style="font-size:0.78rem;color:var(--gray-400);margin-bottom:6px">يمكنك اختيار عدة صور دفعة واحدة (Ctrl+Click)</div>
+    <div id="bottomGalleryPreview" style="min-height:60px"></div>
+    <div id="bottomGalleryCount" style="font-size:0.8rem;color:var(--gray-500);margin-bottom:4px"></div>
+    <div id="bottomGalleryUploading" style="margin-top:6px;font-size:0.85rem;color:var(--gray-500)"></div>
+    <input type="hidden" name="bottom_images_json" id="bottomImagesJson" value='<%- JSON.stringify(bottomImages ? bottomImages.map(function(b){return b.image_url}) : []) %>'>
+  </div>
+  <script>
+  (function(){
+    var urls = <%- JSON.stringify(bottomImages ? bottomImages.map(function(b){return b.image_url}) : []) %>;
+    function updateHidden(){ document.getElementById('bottomImagesJson').value = JSON.stringify(urls); }
+    function updateCount(){ document.getElementById('bottomGalleryCount').textContent = urls.length + ' image(s) - will appear vertically on product page'; }
+    function renderPreview(){
+      var container = document.getElementById('bottomGalleryPreview');
+      container.innerHTML = '';
+      urls.forEach(function(url, i){
+        var div = document.createElement('div');
+        div.className = 'bottom-img-item';
+        div.draggable = true;
+        div.dataset.index = i;
+        div.style.cssText = 'display:block;position:relative;margin-bottom:10px;border:2px solid var(--gray-200);border-radius:12px;overflow:hidden;cursor:grab;background:#fff';
+        div.innerHTML = '<div style="position:absolute;top:8px;left:8px;z-index:2;background:'+(i===0?'#D21034':'rgba(0,0,0,0.5)')+';color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.9rem">'+(i+1)+'</div>' +
+          '<button type="button" class="remove-bottom-img" data-url="'+url+'" style="position:absolute;top:8px;right:8px;z-index:2;background:rgba(210,16,52,0.9);color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:1rem;cursor:pointer;line-height:30px;text-align:center">&times;</button>' +
+          '<div style="position:absolute;bottom:8px;right:8px;z-index:2;font-size:1.2rem;color:var(--gray-400);background:rgba(255,255,255,0.8);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center">⠿</div>' +
+          '<img src="'+url+'" style="width:100%;max-height:400px;object-fit:contain;display:block;background:var(--gray-100);pointer-events:none">';
+        container.appendChild(div);
+      });
+      container.querySelectorAll('.remove-bottom-img').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          urls = urls.filter(function(u){ return u !== this.dataset.url; });
+          updateHidden(); renderPreview();
+        });
+      });
+      // drag & drop reorder
+      var dragItem = null;
+      container.querySelectorAll('.bottom-img-item').forEach(function(item){
+        item.addEventListener('dragstart', function(e){ dragItem = this; this.style.opacity = '0.5'; e.dataTransfer.effectAllowed = 'move'; });
+        item.addEventListener('dragend', function(){ this.style.opacity = '1'; dragItem = null; });
+        item.addEventListener('dragover', function(e){ e.preventDefault(); this.style.borderColor = '#006633'; });
+        item.addEventListener('dragleave', function(){ this.style.borderColor = ''; });
+        item.addEventListener('drop', function(e){
+          e.preventDefault(); this.style.borderColor = '';
+          if (dragItem && dragItem !== this) {
+            var from = Array.from(container.children).indexOf(dragItem);
+            var to = Array.from(container.children).indexOf(this);
+            var moved = urls.splice(from, 1)[0];
+            urls.splice(to, 0, moved);
+            updateHidden(); renderPreview();
+          }
+        });
+      });
+    }
+    document.getElementById('uploadBottomGalleryBtn').addEventListener('click', function(){
+      var input = document.getElementById('bottomGalleryInput');
+      var files = input.files;
+      if (!files || files.length === 0) return alert('Select images first');
+      var statusDiv = document.getElementById('bottomGalleryUploading');
+      var btn = this; btn.disabled = true;
+      var pending = Array.from(files);
+      var completed = 0;
+      pending.forEach(function(file){
+        var fd = new FormData(); fd.append('image_file', file);
+        fetch('/admin/upload-image', { method: 'POST', body: fd })
+          .then(function(r){return r.json()})
+          .then(function(data){
+            if (data.url) urls.push(data.url);
+            completed++;
+            statusDiv.textContent = completed + '/' + pending.length + ' uploaded';
+            if (completed === pending.length) {
+              btn.disabled = false; statusDiv.textContent = '';
+              updateHidden(); renderPreview(); updateCount(); input.value = '';
+            }
+          }).catch(function(){
+            completed++;
+            if (completed === pending.length) { btn.disabled = false; statusDiv.textContent = ''; updateHidden(); renderPreview(); updateCount(); input.value = ''; }
+          });
+      });
+    });
+    renderPreview(); updateCount();
+  })();
+  </script>
+
+  <h3 class="form-section-title"><i class="fas fa-dollar-sign"></i> Pricing & Stock</h3>
+  <div class="form-row triple">
+    <div class="form-group"><label>Price (DA)</label><input type="number" step="0.01" name="price" value="<%= product ? product.price : '' %>" required></div>
+    <div class="form-group"><label>Compare Price (DA)</label><input type="number" step="0.01" name="compare_price" value="<%= product ? product.compare_price : '' %>"></div>
+    <div class="form-group"><label>Cost Price (DA)</label><input type="number" step="0.01" name="cost_price" value="<%= product ? product.cost_price : '' %>"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Stock</label><input type="number" name="stock" value="<%= product ? product.stock : '0' %>"></div>
+  </div>
+  <h3 class="form-section-title"><i class="fas fa-images"></i> Product Images (Gallery) <small style="font-weight:400;color:var(--gray-400)">first image = main product image</small></h3>
+  <div class="form-group">
+    <div style="display:flex;gap:8px;margin-bottom:4px">
+      <input type="file" id="productGalleryInput" accept="image/*" multiple style="flex:1;padding:6px;border:1px solid var(--gray-300);border-radius:6px;font-size:0.85rem">
+      <button type="button" id="uploadProductGalleryBtn" class="btn btn-sm btn-primary"><i class="fas fa-upload"></i> Upload All</button>
+    </div>
+    <div style="font-size:0.78rem;color:var(--gray-400);margin-bottom:6px">يمكنك اختيار حتى 8 صور (Ctrl+Click) - أول صورة هي الرئيسية</div>
+    <div id="productGalleryCount" style="font-size:0.8rem;color:var(--gray-500);margin-bottom:4px"></div>
+    <div id="productGalleryPreview" style="min-height:60px"></div>
+    <div id="productGalleryUploading" style="margin-top:6px;font-size:0.85rem;color:var(--gray-500)"></div>
+    <input type="hidden" name="product_images_json" id="productImagesJson" value='<%- JSON.stringify(images ? images.map(function(b){return b.image_url}) : (product && product.image_url ? [product.image_url] : [])) %>'>
+  </div>
+  <script>
+  (function(){
+    var imgUrls = <%- JSON.stringify(images ? images.map(function(b){return b.image_url}) : (product && product.image_url ? [product.image_url] : [])) %>;
+    function updateProductHidden(){ document.getElementById('productImagesJson').value = JSON.stringify(imgUrls); }
+    function updateProductCount(){ document.getElementById('productGalleryCount').textContent = imgUrls.length + '/8 images - first is main product image'; }
+    function renderProductPreview(){
+      var container = document.getElementById('productGalleryPreview');
+      container.innerHTML = '';
+      imgUrls.forEach(function(url, i){
+        var div = document.createElement('div');
+        div.draggable = true;
+        div.dataset.index = i;
+        div.style.cssText = 'display:block;position:relative;margin-bottom:8px;border:2px solid '+(i===0?'#D21034':'var(--gray-200)')+';border-radius:12px;overflow:hidden;cursor:grab;background:#fff';
+        div.innerHTML = '<div style="position:absolute;top:8px;left:8px;z-index:2;background:'+(i===0?'#D21034':'rgba(0,0,0,0.5)')+';color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.9rem">'+(i+1)+'</div>' +
+          (i===0?'<div style="position:absolute;top:8px;left:48px;z-index:2;background:#D21034;color:#fff;font-size:0.65rem;padding:2px 8px;border-radius:20px;font-weight:700">Main</div>':'') +
+          '<button type="button" class="remove-product-img" data-url="'+url+'" style="position:absolute;top:8px;right:8px;z-index:2;background:rgba(210,16,52,0.9);color:#fff;border:none;border-radius:50%;width:30px;height:30px;font-size:1rem;cursor:pointer;line-height:30px;text-align:center">&times;</button>' +
+          '<div style="position:absolute;bottom:8px;right:8px;z-index:2;font-size:1.2rem;color:var(--gray-400);background:rgba(255,255,255,0.8);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center">⠿</div>' +
+          '<img src="'+url+'" style="width:100%;max-height:300px;object-fit:contain;display:block;background:var(--gray-100);pointer-events:none">';
+        container.appendChild(div);
+      });
+      container.querySelectorAll('.remove-product-img').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          imgUrls = imgUrls.filter(function(u){ return u !== this.dataset.url; });
+          updateProductHidden(); renderProductPreview(); updateProductCount();
+        });
+      });
+      var dragItem = null;
+      container.querySelectorAll('[draggable]').forEach(function(item){
+        item.addEventListener('dragstart', function(e){ dragItem = this; this.style.opacity = '0.5'; e.dataTransfer.effectAllowed = 'move'; });
+        item.addEventListener('dragend', function(){ this.style.opacity = '1'; dragItem = null; });
+        item.addEventListener('dragover', function(e){ e.preventDefault(); this.style.borderColor = '#006633'; });
+        item.addEventListener('dragleave', function(){ this.style.borderColor = ''; });
+        item.addEventListener('drop', function(e){
+          e.preventDefault(); this.style.borderColor = '';
+          if (dragItem && dragItem !== this) {
+            var from = Array.from(container.children).indexOf(dragItem);
+            var to = Array.from(container.children).indexOf(this);
+            var moved = imgUrls.splice(from, 1)[0];
+            imgUrls.splice(to, 0, moved);
+            updateProductHidden(); renderProductPreview(); updateProductCount();
+          }
+        });
+      });
+    }
+    document.getElementById('uploadProductGalleryBtn').addEventListener('click', function(){
+      var input = document.getElementById('productGalleryInput');
+      var files = input.files;
+      if (!files || files.length === 0) return alert('Select images first');
+      if (imgUrls.length + files.length > 8) return alert('Maximum 8 images allowed');
+      var statusDiv = document.getElementById('productGalleryUploading');
+      var btn = this; btn.disabled = true;
+      var pending = Array.from(files);
+      var completed = 0;
+      pending.forEach(function(file){
+        var fd = new FormData(); fd.append('image_file', file);
+        fetch('/admin/upload-image', { method: 'POST', body: fd })
+          .then(function(r){return r.json()})
+          .then(function(data){
+            if (data.url) imgUrls.push(data.url);
+            completed++;
+            statusDiv.textContent = completed + '/' + pending.length + ' uploaded';
+            if (completed === pending.length) {
+              btn.disabled = false; statusDiv.textContent = '';
+              updateProductHidden(); renderProductPreview(); updateProductCount(); input.value = '';
+            }
+          }).catch(function(){
+            completed++;
+            if (completed === pending.length) { btn.disabled = false; statusDiv.textContent = ''; updateProductHidden(); renderProductPreview(); updateProductCount(); input.value = ''; }
+          });
+      });
+    });
+    renderProductPreview(); updateProductCount();
+  })();
+  </script>
+
+  <div class="form-row">
+    <div class="form-check"><input type="checkbox" name="featured" value="1" <%= product && product.featured ? 'checked' : '' %>> <label>Featured Product</label></div>
+    <div class="form-check"><input type="checkbox" name="active" value="1" <%= !product || product.active ? 'checked' : '' %>> <label>Active</label></div>
+    <div class="form-check"><input type="checkbox" name="show_price" value="1" <%= !product || product.show_price ? 'checked' : '' %>> <label>Show Price Above Order Form</label></div>
+    <div class="form-check"><input type="checkbox" name="show_shipping" value="1" <%= !product || product.show_shipping ? 'checked' : '' %>> <label>Show Shipping Price</label></div>
+  </div>
+
+  <%- include('product-options', { options: options || [] }) %>
+  <%- include('product-offers', { offers: offers || [] }) %>
+
+  <div class="form-actions">
+    <a href="/admin/products" class="btn btn-outline">Cancel</a>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Product</button>
+  </div>
+</form>

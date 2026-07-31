@@ -1,0 +1,34 @@
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+  <div>
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">New Category</h3>
+    <form action="/admin/categories/save" method="POST" class="admin-form">
+      <div class="form-group"><label>Name (Arabic)</label><input type="text" id="cat_name_ar" name="name_ar" required></div>
+      <div class="form-group"><label>Name (French)</label><input type="text" id="cat_name_fr" name="name_fr" required></div>
+      <div class="form-group"><label>Name (English)</label><input type="text" name="name_en" required></div>
+      <div class="form-group"><label>Slug</label><input type="text" id="cat_slug" name="slug"></div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
+  </div>
+  <div>
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">All Categories</h3>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Products</th><th></th></tr></thead>
+        <tbody>
+          <% if (categories.length === 0) { %><tr><td colspan="3" class="empty-cell">No categories</td></tr><% } %>
+          <% categories.forEach(function(c) { %>
+            <tr>
+              <td><strong><%= c.name_fr %></strong><br><span style="font-size:0.78rem;color:var(--gray-400)"><%= c.name_ar %></span></td>
+              <td><%= c.product_count %></td>
+              <td class="actions-cell">
+                <form action="/admin/categories/delete/<%= c.id %>" method="POST" style="display:inline">
+                  <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

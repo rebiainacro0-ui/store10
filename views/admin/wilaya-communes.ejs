@@ -1,0 +1,109 @@
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+  <div>
+    <h2 style="font-size:1.2rem;font-weight:700">Commune Management: <%= wilaya ? wilaya.name_fr : '' %></h2>
+    <p style="color:var(--gray-500);font-size:0.85rem"><%= communes.length %> communes</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <a href="/admin/shipping/commune/export/<%= wilaya.code %>" class="btn btn-sm btn-outline"><i class="fas fa-download"></i> Export CSV</a>
+    <a href="/admin/shipping" class="btn btn-sm btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+  </div>
+</div>
+
+<!-- Wilaya Default Pricing -->
+<form action="/admin/shipping/wilaya/save" method="POST" class="admin-form" style="padding:16px">
+  <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px">Default Pricing for <%= wilaya.name_fr %></h3>
+  <input type="hidden" name="code" value="<%= wilaya.code %>">
+  <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+    <div class="form-group" style="margin-bottom:0"><label>🏠 Home (DA)</label><input type="number" step="0.01" name="shipping_price" value="<%= wilaya.shipping_price %>" style="width:100px"></div>
+    <div class="form-group" style="margin-bottom:0"><label>🏢 Office (DA)</label><input type="number" step="0.01" name="shipping_price_office" value="<%= wilaya.shipping_price_office || '' %>" style="width:100px"></div>
+    <div class="form-group" style="margin-bottom:0"><label>Free Min (DA)</label><input type="number" step="0.01" name="free_shipping_min" value="<%= wilaya.free_shipping_min || '' %>" style="width:100px"></div>
+    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save</button>
+  </div>
+</form>
+
+<!-- Bulk Edit -->
+<form action="/admin/shipping/commune/bulk-price" method="POST" class="admin-form" style="padding:16px;margin-top:12px">
+  <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px">Bulk Edit All Communes</h3>
+  <input type="hidden" name="wilaya_code" value="<%= wilaya.code %>">
+  <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+    <div class="form-group" style="margin-bottom:0"><label>Set Home (DA)</label><input type="number" step="0.01" name="shipping_price" placeholder="Keep" style="width:90px"></div>
+    <div class="form-group" style="margin-bottom:0"><label>Set Office (DA)</label><input type="number" step="0.01" name="shipping_price_office" placeholder="Keep" style="width:90px"></div>
+    <div class="form-group" style="margin-bottom:0"><label>Set Free Min (DA)</label><input type="number" step="0.01" name="free_shipping_min" placeholder="Keep" style="width:90px"></div>
+    <button type="submit" class="btn btn-warning btn-sm" style="background:#d97706;color:white;border:none;padding:8px 16px;border-radius:var(--radius);cursor:pointer;font-weight:600"><i class="fas fa-layer-group"></i> Apply to All</button>
+  </div>
+</form>
+
+<!-- Import CSV -->
+<form action="/admin/shipping/commune/import/<%= wilaya.code %>" method="POST" class="admin-form" style="padding:16px;margin-top:12px">
+  <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px">Import Communes from CSV</h3>
+  <div class="form-group" style="margin-bottom:0">
+    <label>CSV Data (headers: name_ar,name_fr,name_en,shipping_price,shipping_price_office,free_shipping_min,active)</label>
+    <textarea name="csv_data" rows="3" style="width:100%;padding:8px;border:1px solid var(--gray-300);border-radius:var(--radius);font-family:monospace;font-size:0.82rem"></textarea>
+  </div>
+  <button type="submit" class="btn btn-primary btn-sm" style="margin-top:8px"><i class="fas fa-upload"></i> Import</button>
+</form>
+
+<!-- Communes Table -->
+<div class="table-container" style="margin-top:16px">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--gray-200);display:flex;justify-content:space-between;align-items:center">
+    <h3 style="font-size:0.95rem;font-weight:700">All Communes</h3>
+    <input type="text" id="communeSearch" placeholder="Search..." style="padding:6px 12px;border:1px solid var(--gray-300);border-radius:var(--radius);font-size:0.85rem;width:200px">
+  </div>
+  <table class="data-table" id="communesTable">
+    <thead><tr><th>Name (AR)</th><th>Name (FR)</th><th>🏠 Home</th><th>🏢 Office</th><th>Free Min</th><th>Active</th><th></th></tr></thead>
+    <tbody>
+      <% if (communes.length === 0) { %><tr><td colspan="6" class="empty-cell">No communes. Add one below.</td></tr><% } %>
+      <% communes.forEach(function(c) { %>
+        <tr class="commune-row">
+          <form action="/admin/shipping/commune/save" method="POST">
+            <input type="hidden" name="id" value="<%= c.id %>">
+            <input type="hidden" name="wilaya_code" value="<%= wilaya.code %>">
+            <td><input type="text" name="name_ar" value="<%= c.name_ar %>" style="width:100%;padding:4px 6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem"></td>
+            <td><input type="text" name="name_fr" value="<%= c.name_fr %>" style="width:100%;padding:4px 6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem"></td>
+            <td><input type="number" step="0.01" name="shipping_price" value="<%= c.shipping_price %>" style="width:70px;padding:4px 6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem;text-align:center"></td>
+            <td><input type="number" step="0.01" name="shipping_price_office" value="<%= c.shipping_price_office || '' %>" style="width:70px;padding:4px 6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem;text-align:center"></td>
+            <td><input type="number" step="0.01" name="free_shipping_min" value="<%= c.free_shipping_min || '' %>" style="width:70px;padding:4px 6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem;text-align:center"></td>
+            <td><input type="checkbox" name="active" value="1" <%= c.active ? 'checked' : '' %>></td>
+            <td class="actions-cell" style="white-space:nowrap">
+              <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save"></i></button>
+              <button type="submit" formaction="/admin/shipping/commune/delete/<%= c.id %>" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></button>
+            </td>
+          </form>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Add New Commune -->
+<div class="admin-form" style="margin-top:16px">
+  <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:12px">Add New Commune</h3>
+  <form action="/admin/shipping/commune/save" method="POST">
+    <input type="hidden" name="wilaya_code" value="<%= wilaya.code %>">
+    <div style="display:grid;grid-template-columns:1fr 1fr 80px 80px 80px;gap:8px;align-items:end">
+      <div class="form-group" style="margin-bottom:0"><label>Name (AR)</label><input type="text" name="name_ar" required></div>
+      <div class="form-group" style="margin-bottom:0"><label>Name (FR)</label><input type="text" name="name_fr" required></div>
+      <div class="form-group" style="margin-bottom:0"><label>🏠 Home</label><input type="number" step="0.01" name="shipping_price" value="0"></div>
+      <div class="form-group" style="margin-bottom:0"><label>🏢 Office</label><input type="number" step="0.01" name="shipping_price_office" value="0"></div>
+      <div class="form-group" style="margin-bottom:0"><label>Free Min</label><input type="number" step="0.01" name="free_shipping_min"></div>
+    </div>
+    <input type="hidden" name="name_en" value="">
+    <input type="hidden" name="active" value="1">
+    <button type="submit" class="btn btn-primary btn-sm" style="margin-top:8px"><i class="fas fa-plus"></i> Add Commune</button>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var search = document.getElementById('communeSearch');
+  if (search) {
+    search.addEventListener('input', function(){
+      var q = this.value.toLowerCase();
+      document.querySelectorAll('.commune-row').forEach(function(row){
+        var text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+  }
+});
+</script>

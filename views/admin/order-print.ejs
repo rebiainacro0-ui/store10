@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Order <%= order.order_number %></title>
+<style>
+body{font-family:sans-serif;padding:20px}
+table{width:100%;border-collapse:collapse;margin:16px 0}
+th,td{padding:8px 12px;border:1px solid #ddd;text-align:left}
+th{background:#f5f5f5}
+.header{text-align:center;margin-bottom:24px}
+.header h1{margin:0;font-size:1.5rem}
+.info{margin:16px 0}
+.info p{margin:4px 0}
+.total{font-weight:700;font-size:1.1rem}
+@media print{body{padding:0}}
+</style></head>
+<body>
+<div class="header">
+  <h1>DZ Store</h1>
+  <p>Order Slip</p>
+</div>
+<div class="info">
+  <p><strong>Order:</strong> <%= order.order_number %></p>
+  <p><strong>Date:</strong> <%= new Date(order.created_at).toLocaleString() %></p>
+  <p><strong>Customer:</strong> <%= order.full_name %></p>
+  <p><strong>Phone:</strong> <%= order.phone %></p>
+  <p><strong>Wilaya:</strong> <%= order.wilaya_fr || order.wilaya_ar %></p>
+  <p><strong>Address:</strong> <%= order.delivery_address %></p>
+  <p><strong>Delivery:</strong> <%= order.delivery_type === 'home' ? 'Home' : 'Office' %></p>
+  <p><strong>Payment:</strong> <%= order.payment_method.toUpperCase() %></p>
+</div>
+<table>
+  <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
+  <tbody>
+    <% items.forEach(function(item) { %>
+      <tr><td><%= item.product_name_fr || item.product_name_ar %></td><td><%= item.price.toFixed(2) %> DA</td><td><%= item.quantity %></td><td><%= item.total.toFixed(2) %> DA</td></tr>
+    <% }) %>
+  </tbody>
+</table>
+<p class="total">Total: <%= order.total.toFixed(2) %> DA</p>
+<% if (order.notes) { %><p><strong>Notes:</strong> <%= order.notes %></p><% } %>
+</body></html>

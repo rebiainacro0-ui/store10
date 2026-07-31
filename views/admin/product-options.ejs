@@ -1,0 +1,71 @@
+<h3 class="form-section-title"><i class="fas fa-tags"></i> Smart Options</h3>
+<div id="optionsContainer">
+  <% if (options && options.length > 0) { options.forEach(function(opt, oi) { %>
+    <div class="option-group" style="border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:var(--gray-50)">
+      <input type="hidden" name="options[<%= oi %>][id]" value="<%= opt.id %>">
+      <div class="form-row">
+        <div class="form-group"><label>Name (Arabic)</label><input type="text" name="options[<%= oi %>][name_ar]" value="<%= opt.name_ar %>"></div>
+        <div class="form-group"><label>Name (French)</label><input type="text" name="options[<%= oi %>][name_fr]" value="<%= opt.name_fr %>"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Type</label><select name="options[<%= oi %>][type]"><option value="radio" <%= opt.type === 'radio' ? 'selected' : '' %>>Radio</option><option value="select" <%= opt.type === 'select' ? 'selected' : '' %>>Select</option></select></div>
+        <div class="form-check" style="align-self:flex-end;padding-bottom:8px"><input type="checkbox" name="options[<%= oi %>][required]" value="1" <%= opt.required ? 'checked' : '' %>> <label>Required</label></div>
+      </div>
+      <div style="margin-top:8px">
+        <label style="font-size:0.85rem;font-weight:700;color:var(--gray-600)">Values (each with optional price change)</label>
+        <% if (opt.values && opt.values.length > 0) { opt.values.forEach(function(v, vi) { %>
+          <div class="form-row" style="gap:6px;margin-top:6px">
+            <input type="hidden" name="options[<%= oi %>][values][<%= vi %>][id]" value="<%= v.id %>">
+            <input type="text" name="options[<%= oi %>][values][<%= vi %>][value_ar]" value="<%= v.value_ar %>" placeholder="AR" style="flex:1;padding:6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem">
+            <input type="text" name="options[<%= oi %>][values][<%= vi %>][value_fr]" value="<%= v.value_fr %>" placeholder="FR" style="flex:1;padding:6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem">
+            <input type="number" step="0.01" name="options[<%= oi %>][values][<%= vi %>][price_adjustment]" value="<%= v.price_adjustment %>" placeholder="+DA" style="width:80px;padding:6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem">
+            <button type="button" class="btn btn-sm btn-danger remove-opt-val" style="padding:4px 8px" title="Remove"><i class="fas fa-times"></i></button>
+          </div>
+        <% }) } %>
+        <button type="button" class="btn btn-sm btn-outline add-opt-val" data-oi="<%= oi %>" style="margin-top:6px"><i class="fas fa-plus"></i> Add Value</button>
+      </div>
+      <button type="button" class="btn btn-sm btn-danger remove-option" style="margin-top:8px"><i class="fas fa-trash"></i> Remove Option</button>
+    </div>
+  <% }) } %>
+</div>
+<button type="button" id="addOptionBtn" class="btn btn-sm btn-outline"><i class="fas fa-plus"></i> Add Option</button>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var optIdx = <%= (options && options.length) || 0 %>;
+  var container = document.getElementById('optionsContainer');
+  document.getElementById('addOptionBtn').addEventListener('click', function(){
+    var div = document.createElement('div');
+    div.className = 'option-group';
+    div.style.cssText = 'border:1px solid var(--gray-200);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:var(--gray-50)';
+    div.innerHTML = '<input type="hidden" name="options[' + optIdx + '][id]" value="">' +
+      '<div class="form-row"><div class="form-group"><label>Name (Arabic)</label><input type="text" name="options[' + optIdx + '][name_ar]"></div><div class="form-group"><label>Name (French)</label><input type="text" name="options[' + optIdx + '][name_fr]"></div></div>' +
+      '<div class="form-row"><div class="form-group"><label>Type</label><select name="options[' + optIdx + '][type]"><option value="radio">Radio</option><option value="select">Select</option></select></div><div class="form-check" style="align-self:flex-end;padding-bottom:8px"><input type="checkbox" name="options[' + optIdx + '][required]" value="1"> <label>Required</label></div></div>' +
+      '<div style="margin-top:8px"><label style="font-size:0.85rem;font-weight:700;color:var(--gray-600)">Values</label><div class="opt-values"></div><button type="button" class="btn btn-sm btn-outline add-opt-val" data-oi="' + optIdx + '" style="margin-top:6px"><i class="fas fa-plus"></i> Add Value</button></div>' +
+      '<button type="button" class="btn btn-sm btn-danger remove-option" style="margin-top:8px"><i class="fas fa-trash"></i> Remove Option</button>';
+    container.appendChild(div);
+    optIdx++;
+  });
+  container.addEventListener('click', function(e){
+    var target = e.target.closest('.remove-option');
+    if (target) target.closest('.option-group').remove();
+    var addVal = e.target.closest('.add-opt-val');
+    if (addVal) {
+      var oi = addVal.dataset.oi;
+      var valsDiv = addVal.closest('.option-group').querySelector('.opt-values');
+      if (!valsDiv) { valsDiv = document.createElement('div'); valsDiv.className = 'opt-values'; addVal.parentNode.insertBefore(valsDiv, addVal); }
+      var vi = valsDiv.children.length;
+      var row = document.createElement('div');
+      row.className = 'form-row';
+      row.style.cssText = 'gap:6px;margin-top:6px';
+      row.innerHTML = '<input type="text" name="options[' + oi + '][values][' + vi + '][value_ar]" placeholder="AR" style="flex:1;padding:6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem">' +
+        '<input type="text" name="options[' + oi + '][values][' + vi + '][value_fr]" placeholder="FR" style="flex:1;padding:6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem">' +
+        '<input type="number" step="0.01" name="options[' + oi + '][values][' + vi + '][price_adjustment]" placeholder="+DA" style="width:80px;padding:6px;border:1px solid var(--gray-300);border-radius:4px;font-size:0.82rem">' +
+        '<button type="button" class="btn btn-sm btn-danger remove-opt-val" style="padding:4px 8px"><i class="fas fa-times"></i></button>';
+      valsDiv.appendChild(row);
+    }
+    var removeVal = e.target.closest('.remove-opt-val');
+    if (removeVal) removeVal.closest('.form-row').remove();
+  });
+});
+</script>

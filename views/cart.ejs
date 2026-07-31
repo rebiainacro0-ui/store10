@@ -1,0 +1,75 @@
+<section class="section page-header">
+  <div class="container">
+    <h1><%= lang === 'ar' ? 'سلة التسوق' : lang === 'fr' ? 'Panier' : 'Cart' %></h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <% if (typeof error !== 'undefined' && error) { %><div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div><% } %>
+    <% if (typeof success !== 'undefined' && success) { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= success %></div><% } %>
+
+    <% if (items.length === 0) { %>
+      <div class="empty-state">
+        <i class="fas fa-shopping-cart"></i>
+        <h2><%= lang === 'ar' ? 'سلتك فارغة' : lang === 'fr' ? 'Votre panier est vide' : 'Your cart is empty' %></h2>
+        <p><%= lang === 'ar' ? 'أضف بعض المنتجات إلى سلتك' : lang === 'fr' ? 'Ajoutez des produits à votre panier' : 'Add some products to your cart' %></p>
+        <a href="/products" class="btn btn-primary btn-lg"><%= lang === 'ar' ? 'تسوق الآن' : lang === 'fr' ? 'Acheter maintenant' : 'Shop Now' %></a>
+      </div>
+    <% } else { %>
+      <div class="cart-layout">
+        <div class="cart-items">
+          <% items.forEach(function(item) { %>
+            <form action="/cart/update" method="POST" class="cart-item">
+              <div class="cart-item-image">
+                <% if (item.image_url) { %>
+                  <img src="<%= item.image_url %>" alt="<%= item['name_' + lang] %>">
+                <% } else { %>
+                  <div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;color:#ccc;font-size:1.5rem"><i class="fas fa-box"></i></div>
+                <% } %>
+              </div>
+              <div class="cart-item-info">
+                <a href="/products/<%= item.slug %>" class="cart-item-name"><%= item['name_' + lang] %></a>
+                <span class="cart-item-price"><%= item.price.toFixed(2) %> DA</span>
+              </div>
+              <div class="cart-item-qty">
+                <input type="hidden" name="id" value="<%= item.id %>">
+                <input type="number" name="quantity" value="<%= item.quantity %>" min="0" max="<%= item.stock %>" onchange="this.form.submit()">
+              </div>
+              <div class="cart-item-total"><%= (item.price * item.quantity).toFixed(2) %> DA</div>
+              <button type="submit" formaction="/cart/remove" class="remove-btn" title="<%= lang === 'ar' ? 'إزالة' : lang === 'fr' ? 'Supprimer' : 'Remove' %>"><i class="fas fa-trash"></i></button>
+            </form>
+          <% }) %>
+        </div>
+
+        <div>
+          <div class="cart-summary">
+            <h3><%= lang === 'ar' ? 'ملخص السلة' : lang === 'fr' ? 'Récapitulatif' : 'Cart Summary' %></h3>
+            <div class="summary-row"><span><%= lang === 'ar' ? 'المجموع' : lang === 'fr' ? 'Sous-total' : 'Subtotal' %></span><span><%= subtotal.toFixed(2) %> DA</span></div>
+            <div class="summary-row"><span><%= lang === 'ar' ? 'التوصيل' : lang === 'fr' ? 'Livraison' : 'Shipping' %></span><span><%= lang === 'ar' ? 'تحسب عند الدفع' : lang === 'fr' ? 'Calculée à la caisse' : 'Calculated at checkout' %></span></div>
+            <div class="summary-row total"><span><%= lang === 'ar' ? 'الإجمالي التقريبي' : lang === 'fr' ? 'Total estimé' : 'Estimated Total' %></span><span><%= subtotal.toFixed(2) %> DA</span></div>
+            <a href="/checkout" class="btn btn-primary btn-lg btn-block"><%= lang === 'ar' ? 'إتمام الطلب' : lang === 'fr' ? 'Commander' : 'Checkout' %></a>
+            <a href="/products" class="btn btn-outline btn-block" style="margin-top:8px"><%= lang === 'ar' ? 'متابعة التسوق' : lang === 'fr' ? 'Continuer les achats' : 'Continue Shopping' %></a>
+          </div>
+
+          <div class="cart-summary" style="margin-top:16px">
+            <h3><%= lang === 'ar' ? 'رمز تخفيض' : lang === 'fr' ? 'Code promo' : 'Coupon Code' %></h3>
+            <form action="/cart/apply-coupon" method="POST" class="coupon-form">
+              <input type="text" name="code" placeholder="<%= lang === 'ar' ? 'أدخل الرمز' : lang === 'fr' ? 'Entrez le code' : 'Enter code' %>">
+              <button type="submit" class="btn btn-primary btn-sm"><%= lang === 'ar' ? 'تطبيق' : lang === 'fr' ? 'Appliquer' : 'Apply' %></button>
+            </form>
+            <% if (coupons && coupons.length > 0) { %>
+              <div style="margin-top:8px;font-size:0.8rem;color:var(--gray-500)">
+                <% coupons.forEach(function(c) { %>
+                  <div style="display:flex;justify-content:space-between;padding:4px 0">
+                    <span><strong><%= c.code %></strong> - <%= c.type === 'percentage' ? c.value + '%' : c.value + ' DA' %></span>
+                  </div>
+                <% }) %>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</section>

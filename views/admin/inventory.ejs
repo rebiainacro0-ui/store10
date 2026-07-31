@@ -1,0 +1,21 @@
+<h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">Inventory Alert (<%= products.length %> products with low stock)</h3>
+<div class="table-container">
+  <table class="data-table">
+    <thead><tr><th>Product</th><th>Price</th><th>Cost</th><th>Stock</th><th>Margin</th></tr></thead>
+    <tbody>
+      <% if (products.length === 0) { %><tr><td colspan="5" class="empty-cell">All products have sufficient stock</td></tr><% } %>
+      <% products.forEach(function(p) { %>
+        <tr>
+          <td><%= p.name_fr || p.name_ar %></td>
+          <td><%= p.price.toFixed(2) %> DA</td>
+          <td><%= p.cost_price ? p.cost_price.toFixed(2) + ' DA' : '-' %></td>
+          <td>
+            <span class="stock-indicator <%= p.stock > 0 ? 'low' : 'out' %>"></span>
+            <%= p.stock %>
+          </td>
+          <td><%= p.cost_price ? ((p.price - p.cost_price) / p.price * 100).toFixed(0) + '%' : '-' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

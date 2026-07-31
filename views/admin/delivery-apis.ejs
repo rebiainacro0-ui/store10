@@ -1,0 +1,51 @@
+<div class="table-container">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;border-bottom:1px solid var(--gray-200)">
+    <h3 style="font-size:1rem;font-weight:700"><i class="fas fa-truck"></i> Delivery Company APIs</h3>
+    <button type="button" class="btn btn-sm btn-primary" onclick="showAddForm()"><i class="fas fa-plus"></i> Add API</button>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>API URL</th><th>API Key</th><th>Active</th><th>Actions</th></tr></thead>
+    <tbody>
+      <% if (apis && apis.length > 0) { apis.forEach(function(a){ %>
+        <tr>
+          <td><%= a.name %></td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis"><%= a.api_url %></td>
+          <td><code style="font-size:0.75rem"><%= a.api_key.substring(0,8) %>...</code></td>
+          <td><span class="badge <%= a.active ? 'badge-success' : 'badge-secondary' %>"><%= a.active ? 'Yes' : 'No' %></span></td>
+          <td>
+            <button class="btn btn-sm btn-outline" onclick='editApi(<%= JSON.stringify(a) %>)'><i class="fas fa-edit"></i></button>
+            <form action="/admin/delivery-apis/delete/<%= a.id %>" method="POST" style="display:inline">
+              <button class="btn btn-sm btn-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+      <% }) } else { %>
+        <tr><td colspan="5" style="text-align:center;color:var(--gray-400)">No delivery APIs configured</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Add/Edit Modal -->
+<div id="apiModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:var(--radius-xl);padding:24px;width:90%;max-width:500px">
+    <h3 id="modalTitle" style="margin-bottom:16px;font-size:1.1rem">Add Delivery API</h3>
+    <form id="apiForm" action="/admin/delivery-apis/save" method="POST">
+      <input type="hidden" name="id" id="apiId" value="">
+      <div class="form-group"><label>Company Name</label><input type="text" name="name" id="apiName" required placeholder="Yalidine, Maystro, etc."></div>
+      <div class="form-group"><label>API URL</label><input type="url" name="api_url" id="apiUrl" required placeholder="https://api.yalidine.com/v1/shipments"></div>
+      <div class="form-group"><label>API Key / Token</label><input type="text" name="api_key" id="apiKey" required></div>
+      <div class="form-check"><input type="checkbox" name="active" value="1" id="apiActive" checked> <label>Active</label></div>
+      <div class="form-actions" style="margin-top:16px">
+        <button type="button" class="btn btn-outline" onclick="hideModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function showAddForm(){ document.getElementById('modalTitle').textContent='Add Delivery API'; document.getElementById('apiId').value=''; document.getElementById('apiName').value=''; document.getElementById('apiUrl').value=''; document.getElementById('apiKey').value=''; document.getElementById('apiActive').checked=true; document.getElementById('apiModal').style.display='flex'; }
+function editApi(a){ document.getElementById('modalTitle').textContent='Edit '+a.name; document.getElementById('apiId').value=a.id; document.getElementById('apiName').value=a.name; document.getElementById('apiUrl').value=a.api_url; document.getElementById('apiKey').value=a.api_key; document.getElementById('apiActive').checked=a.active==1; document.getElementById('apiModal').style.display='flex'; }
+function hideModal(){ document.getElementById('apiModal').style.display='none'; }
+document.getElementById('apiModal').addEventListener('click', function(e){ if(e.target===this) hideModal(); });
+</script>

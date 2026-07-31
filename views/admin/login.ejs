@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login | DZ Store</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="login-body">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="logo" style="justify-content:center">
+          <span class="logo-dz">DZ</span>
+          <span class="logo-text" style="font-family:var(--font-lat)">Store Admin</span>
+        </div>
+        <h1>Bienvenue</h1>
+        <p>Connectez-vous pour gérer votre boutique</p>
+      </div>
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <%= error %></div>
+      <% } %>
+      <form action="/admin/login" method="POST">
+        <div class="form-group">
+          <label for="username">Nom d'utilisateur</label>
+          <input type="text" id="username" name="username" required placeholder="admin">
+        </div>
+        <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" name="password" required placeholder="••••••">
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Se connecter</button>
+      </form>
+      <div class="login-footer">
+        <a href="/">← Retour à la boutique</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

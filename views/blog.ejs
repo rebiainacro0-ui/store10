@@ -1,0 +1,28 @@
+<section class="section page-header">
+  <div class="container">
+    <h1><%= lang === 'ar' ? 'المدونة' : lang === 'fr' ? 'Blog' : 'Blog' %></h1>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <% if (posts.length === 0) { %>
+      <div class="empty-state">
+        <i class="fas fa-newspaper"></i>
+        <h2><%= lang === 'ar' ? 'لا توجد مقالات' : lang === 'fr' ? 'Aucun article' : 'No posts yet' %></h2>
+      </div>
+    <% } else { %>
+      <div class="blog-grid">
+        <% posts.forEach(function(post) { %>
+          <a href="/blog/<%= post.slug %>" class="blog-card">
+            <div class="blog-card-image" style="display:flex;align-items:center;justify-content:center;color:#ccc;font-size:2rem"><i class="fas fa-newspaper"></i></div>
+            <div class="blog-card-body">
+              <h3><%= post['title_' + lang] %></h3>
+              <p><%= post['content_' + lang] ? post['content_' + lang].substring(0, 150) + '...' : '' %></p>
+              <div class="blog-date"><%= new Date(post.created_at).toLocaleDateString() %></div>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>

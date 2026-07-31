@@ -1,0 +1,42 @@
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+  <div>
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">New Coupon</h3>
+    <form action="/admin/coupons/save" method="POST" class="admin-form">
+      <div class="form-row">
+        <div class="form-group"><label>Code</label><input type="text" name="code" required placeholder="PROMO20"></div>
+        <div class="form-group"><label>Type</label><select name="type"><option value="percentage">Percentage</option><option value="fixed">Fixed Amount</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Value</label><input type="number" step="0.01" name="value" required></div>
+        <div class="form-group"><label>Min Order (DA)</label><input type="number" step="0.01" name="min_order" value="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Max Uses</label><input type="number" name="max_uses" placeholder="Unlimited"></div>
+        <div class="form-group"><label>Expires At</label><input type="datetime-local" name="expires_at"></div>
+      </div>
+      <div class="form-check"><input type="checkbox" name="active" value="1" checked> <label>Active</label></div>
+      <div class="form-actions"><button type="submit" class="btn btn-primary">Save Coupon</button></div>
+    </form>
+  </div>
+  <div>
+    <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">All Coupons</h3>
+    <div class="table-container">
+      <table class="data-table">
+        <thead><tr><th>Code</th><th>Value</th><th>Used</th><th>Active</th><th>Expires</th><th></th></tr></thead>
+        <tbody>
+          <% if (coupons.length === 0) { %><tr><td colspan="6" class="empty-cell">No coupons</td></tr><% } %>
+          <% coupons.forEach(function(c) { %>
+            <tr>
+              <td><strong><%= c.code %></strong></td>
+              <td><%= c.type === 'percentage' ? c.value + '%' : c.value + ' DA' %></td>
+              <td><%= c.used_count %><%= c.max_uses ? '/' + c.max_uses : '' %></td>
+              <td><span class="badge <%= c.active ? 'badge-success' : 'badge-danger' %>"><%= c.active ? 'Yes' : 'No' %></span></td>
+              <td><%= c.expires_at ? new Date(c.expires_at).toLocaleDateString() : 'Never' %></td>
+              <td><form action="/admin/coupons/delete/<%= c.id %>" method="POST"><button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete?')"><i class="fas fa-trash"></i></button></form></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

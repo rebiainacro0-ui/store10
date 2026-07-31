@@ -1,0 +1,144 @@
+<% var fp = product ? (flashSale ? product.price * (1 - flashSale.discount_percent/100) : product.price) : (items.length ? items[0].price : 0); %>
+<section class="checkout-landing">
+  <div class="checkout-landing-inner">
+    <!-- Product Header -->
+    <% if (product) { %>
+    <div class="checkout-product-card">
+      <div class="checkout-product-img">
+        <% if (product.image_url) { %><img src="<%= product.image_url %>" alt="<%= product['name_' + lang] %>"><% } else { %><i class="fas fa-box"></i><% } %>
+      </div>
+      <div class="checkout-product-info">
+        <h1><%= product['name_' + lang] %></h1>
+        <div class="checkout-price-row">
+          <span class="checkout-price-current"><%= fp.toFixed(2) %> DA</span>
+          <% if (product.compare_price) { %><span class="checkout-price-old"><%= product.compare_price.toFixed(2) %> DA</span><span class="checkout-badge">-<%= Math.round((1 - product.price/product.compare_price)*100) %>%</span><% } %>
+        </div>
+        <div class="checkout-product-meta">
+          <span><i class="fas fa-truck"></i> <%= lang === 'ar' ? 'توصيل سريع' : lang === 'fr' ? 'Livraison rapide' : 'Fast delivery' %></span>
+          <span><i class="fas fa-shield-alt"></i> <%= lang === 'ar' ? 'الدفع عند الاستلام' : lang === 'fr' ? 'Paiement à la livraison' : 'Cash on delivery' %></span>
+        </div>
+      </div>
+    </div>
+    <% } else { %>
+    <div class="checkout-product-card">
+      <div class="checkout-product-info">
+        <h1><%= lang === 'ar' ? 'طلبك' : lang === 'fr' ? 'Votre commande' : 'Your Order' %></h1>
+        <% items.forEach(function(item) { %>
+          <div class="checkout-item-line">
+            <span><%= item['name_' + lang] %> × <%= item.quantity %></span>
+            <span class="checkout-price-current" style="font-size:1rem"><%= (item.price * item.quantity).toFixed(2) %> DA</span>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Form -->
+    <form action="/checkout" method="POST" class="checkout-landing-form">
+      <div class="checkout-field">
+        <label><%= lang === 'ar' ? 'الاسم الكامل' : lang === 'fr' ? 'Nom complet' : 'Full Name' %></label>
+        <input type="text" name="full_name" required placeholder="<%= lang === 'ar' ? 'أحمد بن محمد' : lang === 'fr' ? 'Ahmed Ben Mohamed' : 'Ahmed Ben Mohamed' %>">
+      </div>
+      <div class="checkout-field">
+        <label><%= lang === 'ar' ? 'رقم الهاتف' : lang === 'fr' ? 'Numéro de téléphone' : 'Phone Number' %></label>
+        <input type="tel" name="phone" required placeholder="05XX XX XX XX" pattern="[0-9]{10}" inputmode="numeric">
+      </div>
+      <div class="checkout-field">
+        <label><%= lang === 'ar' ? 'الولاية' : lang === 'fr' ? 'Wilaya' : 'Wilaya' %></label>
+        <select id="wilaya" name="wilaya_code" required>
+          <option value=""><%= lang === 'ar' ? 'اختر ولايتك' : lang === 'fr' ? 'Choisissez votre wilaya' : 'Select your wilaya' %></option>
+          <% wilayas.forEach(function(w) { %>
+            <option value="<%= w.code %>"><%= w['name_' + lang] %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="checkout-field">
+        <label><%= lang === 'ar' ? 'البلدية' : lang === 'fr' ? 'Commune' : 'Commune' %></label>
+        <select id="commune" name="commune_id" required disabled>
+          <option value=""><%= lang === 'ar' ? 'اختر ولايتك أولاً' : lang === 'fr' ? 'Choisissez votre wilaya d\'abord' : 'Select your wilaya first' %></option>
+        </select>
+      </div>
+      <div class="checkout-field">
+        <label><%= lang === 'ar' ? 'العنوان الكامل' : lang === 'fr' ? 'Adresse complète' : 'Full Address' %></label>
+        <input type="text" name="delivery_address" required placeholder="<%= lang === 'ar' ? '15 شارع فلسطين، رقم 3، المدينة' : lang === 'fr' ? '15 Rue Palestine, N°3, Cité' : '15 Palestine Street, No.3' %>">
+      </div>
+
+      <!-- Order Summary -->
+      <div class="checkout-summary-box">
+        <div class="summary-line"><span><%= lang === 'ar' ? 'المبلغ' : lang === 'fr' ? 'Montant' : 'Subtotal' %></span><span id="subtotalDisplay"><%= subtotal.toFixed(2) %> DA</span></div>
+        <div class="summary-line"><span><%= lang === 'ar' ? 'التوصيل' : lang === 'fr' ? 'Livraison' : 'Shipping' %></span><span id="shippingDisplay"><%= lang === 'ar' ? 'سيتم حسابه' : lang === 'fr' ? 'À calculer' : 'Calculated below' %></span></div>
+        <div class="summary-line summary-total"><span><%= lang === 'ar' ? 'الإجمالي' : lang === 'fr' ? 'Total' : 'Total' %></span><span id="totalDisplay"><%= subtotal.toFixed(2) %> DA</span></div>
+      </div>
+
+      <button type="submit" class="checkout-cta">
+        <i class="fas fa-check-circle"></i>
+        <%= lang === 'ar' ? 'تأكيد الطلب الآن' : lang === 'fr' ? 'Confirmer la commande' : 'Confirm Order' %>
+      </button>
+
+      <p class="checkout-footer-text">
+        <i class="fas fa-lock"></i>
+        <%= lang === 'ar' ? 'معلوماتك آمنة ومشفرة. الدفع عند الاستلام.' : lang === 'fr' ? 'Vos informations sont sécurisées. Paiement à la livraison.' : 'Your info is secure. Pay on delivery.' %>
+      </p>
+    </form>
+  </div>
+</section>
+
+<script>
+var lang = '<%= lang %>';
+document.addEventListener('DOMContentLoaded', function(){
+  const wilaya = document.getElementById('wilaya');
+  const commune = document.getElementById('commune');
+  const subtotal = <%= subtotal %>;
+  var freeText = lang === 'ar' ? 'مجاني' : lang === 'fr' ? 'Gratuit' : 'Free';
+  var loadText = lang === 'ar' ? 'جاري التحميل...' : lang === 'fr' ? 'Chargement...' : 'Loading...';
+  var selectCommuneText = lang === 'ar' ? 'اختر بلديتك' : lang === 'fr' ? 'Choisissez votre commune' : 'Select your commune';
+  function updateUI(shipping) {
+    var total = subtotal + (shipping || 0);
+    document.getElementById('shippingDisplay').textContent = shipping ? shipping.toFixed(2) + ' DA' : freeText;
+    document.getElementById('totalDisplay').textContent = total.toFixed(2) + ' DA';
+  }
+  if (wilaya) {
+    wilaya.addEventListener('change', function(){
+      var code = this.value;
+      commune.innerHTML = '<option value="">' + loadText + '</option>';
+      commune.disabled = true;
+      if (!code) { updateUI(0); return; }
+      fetch('/api/shipping/' + code).then(function(r){return r.json()}).then(function(data){
+        var shipping = 0;
+        if (!(data.free_shipping_min && subtotal >= data.free_shipping_min)) shipping = data.shipping_price;
+        updateUI(shipping);
+      });
+      fetch('/api/communes/' + code).then(function(r){return r.json()}).then(function(data){
+        commune.innerHTML = '<option value="">' + selectCommuneText + '</option>';
+        data.forEach(function(c){
+          var opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = c.name_fr;
+          opt.dataset.shipping = c.shipping_price || 0;
+          opt.dataset.freeMin = c.free_shipping_min || '';
+          commune.appendChild(opt);
+        });
+        commune.disabled = false;
+      });
+    });
+    commune.addEventListener('change', function(){
+      var opt = this.options[this.selectedIndex];
+      if (!opt || !opt.value) { updateUI(0); return; }
+      var shipping = parseFloat(opt.dataset.shipping) || 0;
+      var freeMin = opt.dataset.freeMin ? parseFloat(opt.dataset.freeMin) : null;
+      if (freeMin && subtotal >= freeMin) shipping = 0;
+      if (shipping === 0) {
+        var code = wilaya.value;
+        fetch('/api/shipping/' + code).then(function(r){return r.json()}).then(function(data){
+          var s = 0;
+          if (!(data.free_shipping_min && subtotal >= data.free_shipping_min)) s = data.shipping_price;
+          updateUI(s);
+        });
+      } else {
+        updateUI(shipping);
+      }
+    });
+  }
+  updateUI(0);
+});
+</script>

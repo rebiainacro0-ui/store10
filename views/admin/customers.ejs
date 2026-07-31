@@ -1,0 +1,19 @@
+<h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">Customers (<%= customers.length %>)</h3>
+<div class="table-container">
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Phone</th><th>Wilaya</th><th>Orders</th><th>Total Spent</th><th>Date</th></tr></thead>
+    <tbody>
+      <% if (customers.length === 0) { %><tr><td colspan="6" class="empty-cell">No customers</td></tr><% } %>
+      <% customers.forEach(function(c) { %>
+        <tr>
+          <td><strong><%= c.full_name %></strong></td>
+          <td><%= c.phone %></td>
+          <td><%= c.wilaya || '' %></td>
+          <td><%= c.order_count || 0 %></td>
+          <td><%= (c.total_spent || 0).toFixed(2) %> DA</td>
+          <td><%= new Date(c.created_at).toLocaleDateString() %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

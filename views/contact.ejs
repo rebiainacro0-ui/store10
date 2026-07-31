@@ -1,0 +1,45 @@
+<section class="section page-header">
+  <div class="container">
+    <h1><%= lang === 'ar' ? 'اتصل بنا' : lang === 'fr' ? 'Contactez-nous' : 'Contact Us' %></h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <% if (typeof success !== 'undefined' && success) { %><div class="alert alert-success"><i class="fas fa-check-circle"></i> <%= success %></div><% } %>
+    <div class="contact-grid">
+      <div>
+        <form action="/contact" method="POST" class="checkout-form" style="padding:24px">
+          <div class="form-group">
+            <label><%= lang === 'ar' ? 'الاسم' : lang === 'fr' ? 'Nom' : 'Name' %></label>
+            <input type="text" name="name" required>
+          </div>
+          <div class="form-group">
+            <label><%= lang === 'ar' ? 'البريد الإلكتروني' : lang === 'fr' ? 'Email' : 'Email' %></label>
+            <input type="email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label><%= lang === 'ar' ? 'الموضوع' : lang === 'fr' ? 'Sujet' : 'Subject' %></label>
+            <input type="text" name="subject" required>
+          </div>
+          <div class="form-group">
+            <label><%= lang === 'ar' ? 'الرسالة' : lang === 'fr' ? 'Message' : 'Message' %></label>
+            <textarea name="message" rows="5" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary"><%= lang === 'ar' ? 'إرسال' : lang === 'fr' ? 'Envoyer' : 'Send' %></button>
+        </form>
+      </div>
+      <div class="contact-info">
+        <h3><%= lang === 'ar' ? 'معلومات الاتصال' : lang === 'fr' ? 'Informations de contact' : 'Contact Information' %></h3>
+        <p><i class="fas fa-map-marker-alt"></i> <%= lang === 'ar' ? 'الجزائر العاصمة' : lang === 'fr' ? 'Alger' : 'Algiers' %></p>
+        <p><i class="fas fa-phone"></i> 021 123 456</p>
+        <p><i class="fas fa-envelope"></i> contact@dzstore.dz</p>
+        <p><i class="fab fa-whatsapp"></i> +213 XXX XX XX XX</p>
+        <div style="margin-top:24px">
+          <h3><%= lang === 'ar' ? 'ساعات العمل' : lang === 'fr' ? 'Horaires' : 'Working Hours' %></h3>
+          <p><%= lang === 'ar' ? 'السبت - الخميس: 08:00 - 18:00' : lang === 'fr' ? 'Sam - Jeu: 08:00 - 18:00' : 'Sat - Thu: 08:00 - 18:00' %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
