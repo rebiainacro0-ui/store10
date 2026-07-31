@@ -11,5 +11,9 @@
       "src": "/(.*)",
       "dest": "api/index.js"
     }
-  ]
+  ],
+  "env": {
+    "DATABASE_URL": "postgresql://postgres:nacro%40%40123N@db.dguayfjfpflqevxoairn.supabase.co:5432/postgres",
+    "SESSION_SECRET": "abc123xyzsecret456"
+  }
 }
