@@ -26,6 +26,23 @@
     .btn-accent { background: var(--accent); color: <%= settings.btn_color || '#ffffff' %>; }
     .btn-accent:hover { background: var(--accent-dark); }
   </style>
+  <% if (settings.facebook_pixel) { %>
+  <script>
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '<%= settings.facebook_pixel %>');
+    fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=<%= settings.facebook_pixel %>&ev=PageView&noscript=1"/></noscript>
+  <% } %>
+  <% if (settings.tiktok_pixel) { %>
+  <script>
+    !function (w, d, t) {
+      w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=ttq._i[e]||{_ttq_pv:0,ttq_mid:(n&&n.mid)?n.mid:""};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};
+      ttq.load('<%= settings.tiktok_pixel %>');
+      ttq.page();
+    }(window, document, 'ttq');
+  </script>
+  <% } %>
 </head>
 <body>
   <!-- Announcement Bar -->

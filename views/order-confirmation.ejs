@@ -70,3 +70,24 @@
     </div>
   </div>
 </section>
+
+<% if (settings.facebook_pixel) { %>
+<script>
+  fbq('track', 'Purchase', {
+    value: <%= order.total %>,
+    currency: 'DZD',
+    content_ids: [<%- items.map(function(i){ return i.product_id; }).join(',') %>],
+    content_type: 'product'
+  });
+</script>
+<% } %>
+<% if (settings.tiktok_pixel) { %>
+<script>
+  ttq.track('CompletePayment', {
+    value: <%= order.total %>,
+    currency: 'DZD',
+    content_id: [<%- items.map(function(i){ return i.product_id; }).join(',') %>],
+    content_type: 'product'
+  });
+</script>
+<% } %>
