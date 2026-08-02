@@ -543,7 +543,7 @@ router.get('/settings', requireAuth, asyncHandler(async (req, res) => {
 router.post('/settings/save', requireAuth, express.urlencoded({ extended: true }), asyncHandler(async (req, res) => {
   const db = getDb();
   for (const [key, value] of Object.entries(req.body)) {
-    await db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value').run(key, value);
+    await db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value RETURNING key').run(key, value);
   }
   res.redirect('/admin/settings');
 }));
