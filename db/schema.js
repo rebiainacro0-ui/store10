@@ -1,6 +1,7 @@
 const path = require('path');
 
 let db;
+let sqliteHandle = null;
 let pgInitPromise = null;
 let pgFailed = false;
 
@@ -17,6 +18,14 @@ function getDb() {
   return buildSqlite();
 }
 
+function closeDb() {
+  if (sqliteHandle) {
+    try { sqliteHandle.close(); } catch (e) {}
+    sqliteHandle = null;
+    db = null;
+  }
+}
+
 function buildSqlite() {
   const Database = require('better-sqlite3');
   const bcrypt = require('bcryptjs');
@@ -25,6 +34,7 @@ function buildSqlite() {
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
   initSqliteSchema(sqlite, bcrypt);
+  sqliteHandle = sqlite;
   db = wrapSqlite(sqlite);
   return db;
 }
@@ -385,4 +395,4 @@ function seedWilayasSqlite(db) {
   for (const row of data) w.run(row[0], row[1], row[2], row[3]);
 }
 
-module.exports = { getDb };
+module.exports = { getDb, closeDb };

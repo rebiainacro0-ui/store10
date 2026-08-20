@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const layouts = require('express-ejs-layouts');
-const { getDb } = require('./db/schema');
+const { getDb, closeDb } = require('./db/schema');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,6 +46,13 @@ app.use(async (req, res, next) => {
     res.locals.cartCount = row && row.count ? Number(row.count) : 0;
     next();
   } catch (err) { next(err); }
+});
+
+app.use((req, res, next) => {
+  if (!process.env.DATABASE_URL) {
+    res.on('finish', () => closeDb());
+  }
+  next();
 });
 
 const storeRoutes = require('./routes/store');
