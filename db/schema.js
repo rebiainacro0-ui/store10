@@ -4,6 +4,7 @@ let db;
 let sqliteHandle = null;
 let pgInitPromise = null;
 let pgFailed = false;
+let openRefs = 0;
 
 function getDb() {
   if (db) return db;
@@ -16,6 +17,17 @@ function getDb() {
   }
 
   return buildSqlite();
+}
+
+function acquireDb() {
+  const d = getDb();
+  openRefs++;
+  return d;
+}
+
+function releaseDb() {
+  openRefs = Math.max(0, openRefs - 1);
+  if (openRefs === 0) closeDb();
 }
 
 function closeDb() {
@@ -395,4 +407,4 @@ function seedWilayasSqlite(db) {
   for (const row of data) w.run(row[0], row[1], row[2], row[3]);
 }
 
-module.exports = { getDb, closeDb };
+module.exports = { getDb, acquireDb, releaseDb, closeDb };

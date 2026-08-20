@@ -2,7 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const path = require('path');
 const layouts = require('express-ejs-layouts');
-const { getDb, closeDb } = require('./db/schema');
+const { getDb, acquireDb, releaseDb, closeDb } = require('./db/schema');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -50,7 +50,8 @@ app.use(async (req, res, next) => {
 
 app.use((req, res, next) => {
   if (!process.env.DATABASE_URL) {
-    res.on('finish', () => closeDb());
+    acquireDb();
+    res.on('finish', () => releaseDb());
   }
   next();
 });
