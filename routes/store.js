@@ -32,15 +32,16 @@ function getShippingPrice(wilaya, commune, deliveryType, subtotal) {
 router.get('/', asyncHandler(async (req, res) => {
   const db = getDb();
   const lang = req.session.lang || 'ar';
-  const [featured, categories, flashSales, topRated] = await Promise.all([
+  const [featured, categories, flashSales, topRated, recentlyViewed] = await Promise.all([
     db.prepare('SELECT * FROM products WHERE featured = 1 AND active = 1 ORDER BY created_at DESC LIMIT 8').all(),
     db.prepare('SELECT * FROM categories ORDER BY created_at DESC').all(),
     db.prepare("SELECT fs.*, p.* FROM flash_sales fs JOIN products p ON fs.product_id = p.id WHERE fs.active = 1 AND fs.end_date > NOW() AND fs.start_date <= NOW()").all(),
     db.prepare("SELECT p.*, COALESCE((SELECT AVG(r.rating) FROM reviews r WHERE r.product_id = p.id AND r.approved = 1),0) as avg_rating, (SELECT COUNT(*) FROM reviews r WHERE r.product_id = p.id AND r.approved = 1) as review_count FROM products p WHERE p.active = 1 ORDER BY avg_rating DESC LIMIT 4").all(),
+    db.prepare('SELECT p.* FROM recently_viewed rv JOIN products p ON rv.product_id = p.id WHERE rv.session_id = ? AND p.active = 1 ORDER BY rv.viewed_at DESC LIMIT 8').all(req.session.id),
   ]);
   res.render('index', {
     title: t({title_ar:'الرئيسية',title_fr:'Accueil',title_en:'Home'},'title',lang),
-    featured, categories, flashSales, topRated
+    featured, categories, flashSales, topRated, recentlyViewed
   });
 }));
 
@@ -87,7 +88,21 @@ router.get('/products/:slug', asyncHandler(async (req, res) => {
   }
   const offers = await db.prepare('SELECT * FROM product_offers WHERE product_id = ? AND active = 1').all(product.id);
   const bottomImages = await db.prepare('SELECT * FROM product_bottom_images WHERE product_id = ? ORDER BY sort_order').all(product.id);
-  res.render('product', { title: t(product,'name',lang), product, images, faqs, reviews, related, recentlyViewed, flashSale, wilayas, options, offers, bottomImages });
+  const metaDesc = product['meta_description_' + lang] || t(product, 'description', lang) || '';
+  const seoJson = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product['name_' + lang],
+    image: product.image_url ? [product.image_url] : undefined,
+    description: metaDesc,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'DZD',
+      price: flashSale ? (product.price * (1 - flashSale.discount_percent / 100)).toFixed(2) : product.price.toFixed(2),
+      availability: product.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+    }
+  };
+  res.render('product', { title: t(product,'name',lang), product, images, faqs, reviews, related, recentlyViewed, flashSale, wilayas, options, offers, bottomImages, metaDescription: metaDesc, canonical: 'https://store10-two.vercel.app/products/' + product.slug, seoJson });
 }));
 
 router.get('/cart', asyncHandler(async (req, res) => {

@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %><%= settings.store_name_ar || 'متجر الجزائر' %></title>
-  <meta name="description" content="أفضل متجر إلكتروني في الجزائر - تسوق بأفضل الأسعار مع توصيل إلى جميع الولايات">
+  <meta name="description" content="<%= typeof metaDescription !== 'undefined' && metaDescription ? metaDescription : (settings['meta_description_' + lang] || 'أفضل متجر إلكتروني في الجزائر - تسوق بأفضل الأسعار مع توصيل إلى جميع الولايات') %>">
+  <link rel="canonical" href="<%= typeof canonical !== 'undefined' ? canonical : '/' %>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
@@ -88,5 +89,8 @@
   </footer>
 
   <script src="/js/main.js"></script>
+  <% if (typeof seoJson !== 'undefined' && seoJson) { %>
+  <script type="application/ld+json"><%= JSON.stringify(seoJson) %></script>
+  <% } %>
 </body>
 </html>
