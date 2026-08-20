@@ -50,11 +50,10 @@ function wrapSqlite(sqlite) {
   return {
     prepare(sql) {
       const adapted = toSqliteSql(sql);
-      const stmt = sqlite.prepare(adapted);
       return {
-        run: (...params) => Promise.resolve(stmt.run(...params)),
-        get: (...params) => Promise.resolve(stmt.get(...params)),
-        all: (...params) => Promise.resolve(stmt.all(...params)),
+        run: (...params) => Promise.resolve(sqlite.prepare(adapted).run(...params)),
+        get: (...params) => Promise.resolve(sqlite.prepare(adapted).get(...params)),
+        all: (...params) => Promise.resolve(sqlite.prepare(adapted).all(...params)),
       };
     },
     exec: (sql) => Promise.resolve(sqlite.exec(toSqliteSql(sql))),
