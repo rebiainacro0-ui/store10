@@ -60,6 +60,9 @@ app.use((req, res) => {
 
 app.use((err, req, res, next) => {
   console.error('Error:', err);
+  if (!res.locals.settings) res.locals.settings = {};
+  if (!res.locals.lang) res.locals.lang = req.session && req.session.lang || 'ar';
+  if (res.locals.cartCount === undefined) res.locals.cartCount = 0;
   res.status(500);
   res.render('404', { title: 'خطأ في الخادم', title_fr: 'Erreur serveur', title_en: 'Server Error' });
 });
