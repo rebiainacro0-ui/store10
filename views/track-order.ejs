@@ -28,6 +28,9 @@
     </div>
 
     <% if (typeof order !== 'undefined' && order) { %>
+      <% var stages = ['pending','confirmed','processing','shipped','delivered']; %>
+      <% var curIdx = stages.indexOf(order.status); %>
+      <% if (order.status === 'cancelled') curIdx = -2; %>
       <div class="order-details-card">
         <h3><%= lang === 'ar' ? 'طلب رقم' : lang === 'fr' ? 'Commande N°' : 'Order' %> <%= order.order_number %></h3>
         <p><strong><%= lang === 'ar' ? 'الحالة' : lang === 'fr' ? 'Statut' : 'Status' %>:</strong> <span class="status-badge <%= order.status %>"><%= order.status %></span></p>
@@ -40,6 +43,47 @@
           <p><a href="<%= order.tracking_url %>" target="_blank" class="btn btn-primary btn-sm"><%= lang === 'ar' ? 'تتبع الشحنة' : lang === 'fr' ? 'Suivre le colis' : 'Track Package' %></a></p>
         <% } %>
       </div>
+
+      <% if (curIdx >= 0) { %>
+      <div class="order-tracking-steps">
+        <% stages.forEach(function(s, i) { %>
+          <div class="track-step <%= i <= curIdx ? 'done' : '' %>">
+            <div class="track-dot">
+              <% if (i < curIdx) { %><i class="fas fa-check"></i><% } else { %><%= i + 1 %><% } %>
+            </div>
+            <div class="track-label">
+              <%= lang === 'ar'
+                    ? (s === 'pending' ? 'قيد الانتظار' : s === 'confirmed' ? 'تم التأكيد' : s === 'processing' ? 'قيد التجهيز' : s === 'shipped' ? 'تم الشحن' : 'تم التوصيل')
+                    : lang === 'fr'
+                    ? (s === 'pending' ? 'En attente' : s === 'confirmed' ? 'Confirmée' : s === 'processing' ? 'En préparation' : s === 'shipped' ? 'Expédiée' : 'Livrée')
+                    : (s === 'pending' ? 'Pending' : s === 'confirmed' ? 'Confirmed' : s === 'processing' ? 'Processing' : s === 'shipped' ? 'Shipped' : 'Delivered') %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+      <style>
+        .order-tracking-steps { display: flex; justify-content: space-between; gap: 8px; margin: 20px 0; background: var(--white); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--gray-200); }
+        .track-step { flex: 1; text-align: center; position: relative; }
+        .track-step:not(:last-child)::after { content: ''; position: absolute; top: 16px; left: 50%; width: 100%; height: 2px; background: var(--gray-200); }
+        .track-step.done:not(:last-child)::after { background: var(--primary); }
+        .track-dot { width: 32px; height: 32px; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; border: 2px solid var(--gray-300); color: var(--gray-500); background: var(--white); position: relative; z-index: 1; }
+        .track-step.done .track-dot { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .track-label { font-size: 0.8rem; font-weight: 600; color: var(--gray-500); }
+        .track-step.done .track-label { color: var(--primary-dark); }
+      </style>
+      <% } %>
+
+      <% if (typeof items !== 'undefined' && items && items.length > 0) { %>
+      <div class="order-shipping-card">
+        <h3><%= lang === 'ar' ? 'المنتجات' : lang === 'fr' ? 'Articles' : 'Items' %></h3>
+        <% items.forEach(function(it) { %>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-100)">
+            <span><%= it['product_name_' + lang] %> × <%= it.quantity %></span>
+            <strong><%= it.total.toFixed(2) %> DA</strong>
+          </div>
+        <% }) %>
+      </div>
+      <% } %>
 
       <% if (typeof history !== 'undefined' && history) { %>
       <div class="order-shipping-card">

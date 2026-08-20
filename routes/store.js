@@ -312,8 +312,11 @@ router.post('/track-order', asyncHandler(async (req, res) => {
   const lang = req.session.lang || 'ar';
   const order = await db.prepare('SELECT o.*, w.name_ar as wilaya_ar, w.name_fr as wilaya_fr, w.name_en as wilaya_en FROM orders o LEFT JOIN wilayas w ON o.wilaya_code = w.code WHERE o.order_number = ? AND o.phone = ?').get(req.body.order_number, req.body.phone);
   if (!order) return res.render('track-order', { title: t({title_ar:'تتبع الطلب',title_fr:'Suivi de commande',title_en:'Track Order'},'title',lang), order: null, error: 'لم يتم العثور على الطلب' });
-  const history = await db.prepare('SELECT * FROM order_status_history WHERE order_id = ? ORDER BY created_at DESC').all(order.id);
-  res.render('track-order', { title: t({title_ar:'تتبع الطلب',title_fr:'Suivi de commande',title_en:'Track Order'},'title',lang), order, history });
+  const [history, items] = await Promise.all([
+    db.prepare('SELECT * FROM order_status_history WHERE order_id = ? ORDER BY created_at DESC').all(order.id),
+    db.prepare('SELECT * FROM order_items WHERE order_id = ?').all(order.id),
+  ]);
+  res.render('track-order', { title: t({title_ar:'تتبع الطلب',title_fr:'Suivi de commande',title_en:'Track Order'},'title',lang), order, history, items });
 }));
 
 router.get('/page/:slug', asyncHandler(async (req, res) => {
