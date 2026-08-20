@@ -277,6 +277,16 @@ function seedDemoDataSqlite(db) {
     ];
     products.forEach(p => insProd.run(p.ar, p.fr, p.en, p.slug, p.dar, p.dfr, p.den, p.price, p.compare, p.cat, p.stock, p.feat, 'https://picsum.photos/seed/' + p.slug + '/600/600'));
   }
+
+  const fsCount = db.prepare('SELECT COUNT(*) as c FROM flash_sales').get();
+  if (fsCount.c === 0) {
+    const realProd = db.prepare("SELECT id, price FROM products WHERE active = 1 ORDER BY id LIMIT 3").all();
+    if (realProd.length > 0) {
+      const insFs = db.prepare("INSERT INTO flash_sales (product_id, discount_percent, start_date, end_date, max_quantity, active) VALUES (?,?,datetime('now'),datetime('now','+1 day'),?,1)");
+      const discounts = [30, 20, 15];
+      realProd.forEach((p, i) => insFs.run(p.id, discounts[i % discounts.length], 50));
+    }
+  }
 }
 
 function runSqliteMigrations(db) {
