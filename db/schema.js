@@ -2,17 +2,22 @@ const path = require('path');
 
 let db;
 let pgInitPromise = null;
+let pgFailed = false;
 
 function getDb() {
   if (db) return db;
 
-  if (process.env.DATABASE_URL) {
+  if (process.env.DATABASE_URL && !pgFailed) {
     const pg = require('./pg');
     db = wrapPg(pg);
     ensurePgInit();
     return db;
   }
 
+  return buildSqlite();
+}
+
+function buildSqlite() {
   const Database = require('better-sqlite3');
   const bcrypt = require('bcryptjs');
   const DB_PATH = process.env.DB_PATH || (process.env.VERCEL ? '/tmp/store.db' : path.join(__dirname, '..', 'store.db'));
@@ -27,8 +32,11 @@ function getDb() {
 function ensurePgInit() {
   if (!pgInitPromise) {
     pgInitPromise = require('./schema-pg').initPgSchema().catch(err => {
-      console.error('PostgreSQL schema init failed:', err.message);
+      console.error('PostgreSQL schema init failed, falling back to SQLite:', err.message);
+      pgFailed = true;
+      db = null;
       pgInitPromise = null;
+      buildSqlite();
     });
   }
   return pgInitPromise;
