@@ -85,3 +85,38 @@
   <a href="/admin/orders" class="btn btn-outline"><i class="fas fa-list"></i> All Orders</a>
   <a href="/admin/orders/export" class="btn btn-outline"><i class="fas fa-file-export"></i> Export Orders</a>
 </div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px">
+  <div class="table-container">
+    <div style="padding:16px;border-bottom:1px solid var(--gray-200)">
+      <h3 style="font-size:1rem;font-weight:700">Monthly Revenue</h3>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Month</th><th>Orders</th><th>Revenue</th></tr></thead>
+      <tbody>
+        <% if (monthlyStats.length === 0) { %><tr><td colspan="3" class="empty-cell">No sales data yet</td></tr><% } %>
+        <% monthlyStats.forEach(function(m) { %>
+          <tr><td><%= m.month %></td><td><%= m.orders %></td><td><%= Number(m.revenue).toFixed(2) %> DA</td></tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-container">
+    <div style="padding:16px;border-bottom:1px solid var(--gray-200)">
+      <h3 style="font-size:1rem;font-weight:700;color:#dc2626"><i class="fas fa-exclamation-triangle"></i> Low Stock Items</h3>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Product</th><th>Stock</th></tr></thead>
+      <tbody>
+        <% if (lowStockItems.length === 0) { %><tr><td colspan="2" class="empty-cell">All products sufficiently stocked</td></tr><% } %>
+        <% lowStockItems.forEach(function(p) { %>
+          <tr>
+            <td><a href="/admin/products/<%= p.id %>/edit"><%= p.name_fr || p.name_ar %></a></td>
+            <td><span class="status-badge <%= p.stock === 0 ? 'danger' : 'warning' %>"><%= p.stock %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</div>

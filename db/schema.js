@@ -245,6 +245,38 @@ function initSqliteSchema(db, bcrypt) {
     db.prepare('INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)').run('admin', 'admin@store.com', hash, 'admin');
     seedWilayasSqlite(db);
   }
+  seedDemoDataSqlite(db);
+}
+
+function seedDemoDataSqlite(db) {
+  const catCount = db.prepare('SELECT COUNT(*) as c FROM categories').get();
+  if (catCount.c === 0) {
+    const insCat = db.prepare('INSERT INTO categories (name_ar, name_fr, name_en, slug, description_ar, description_fr, description_en) VALUES (?,?,?,?,?,?,?)');
+    const categories = [
+      { ar:'إلكترونيات', fr:'Électronique', en:'Electronics', slug:'electronics', dar:'أجهزة واكسسوارات تقنية', dfr:'Gadgets et accessoires tech', den:'Gadgets and tech accessories' },
+      { ar:'ملابس', fr:'Vêtements', en:'Clothing', slug:'clothing', dar:'أزياء للرجال والنساء', dfr:'Mode pour hommes et femmes', den:'Fashion for men and women' },
+      { ar:'المنزل والحديقة', fr:'Maison & Jardin', en:'Home & Garden', slug:'home-garden', dar:'كل ما تحتاجه لمنزلك', dfr:'Tout pour votre maison', den:'Everything for your home' },
+      { ar:'رياضة', fr:'Sports', en:'Sports', slug:'sports', dar:'معدات رياضية', dfr:'Équipement sportif', den:'Sports equipment' },
+      { ar:'الصحة والجمال', fr:'Santé & Beauté', en:'Health & Beauty', slug:'health-beauty', dar:'منتجات العناية', dfr:'Produits de soin', den:'Care products' },
+    ];
+    categories.forEach(c => insCat.run(c.ar, c.fr, c.en, c.slug, c.dar, c.dfr, c.den));
+  }
+
+  const prodCount = db.prepare('SELECT COUNT(*) as c FROM products').get();
+  if (prodCount.c === 0) {
+    const insProd = db.prepare('INSERT INTO products (name_ar, name_fr, name_en, slug, description_ar, description_fr, description_en, price, compare_price, category_id, stock, featured, image_url) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    const products = [
+      { ar:'سماعات لاسلكية', fr:'Casque sans fil Pro', en:'Wireless Headphones Pro', slug:'casque-sans-fil-pro', dar:'سماعات مانعة للضوضاء ببطارية 30 ساعة', dfr:'Casque anti-bruit avec batterie 30h', den:'Noise-cancelling headphones with 30h battery', price:5499, compare:6999, cat:1, stock:50, feat:1 },
+      { ar:'ساعة ذكية', fr:'Montre connectée X', en:'Smart Watch Series X', slug:'montre-connectee-x', dar:'ساعة ذكية مع GPS وشاشة AMOLED', dfr:'Montre connectée avec GPS et écran AMOLED', den:'Smart watch with GPS and AMOLED display', price:8999, compare:10999, cat:1, stock:30, feat:1 },
+      { ar:'سماعة بلوتوث', fr:'Enceinte Bluetooth', en:'Bluetooth Speaker', slug:'enceinte-bluetooth', dar:'سماعة محمولة مقاومة للماء', dfr:'Enceinte portable waterproof', den:'Portable waterproof speaker', price:2499, compare:null, cat:1, stock:100, feat:0 },
+      { ar:'سترة جينز', fr:'Veste en jean', en:'Denim Jacket', slug:'veste-jean', dar:'سترة جينز كلاسيكية من قطن ممتاز', dfr:'Veste en jean classique en coton premium', den:'Classic denim jacket in premium cotton', price:3499, compare:4500, cat:2, stock:45, feat:1 },
+      { ar:'حذاء رياضي', fr:'Chaussures de sport', en:'Running Shoes', slug:'chaussures-sport', dar:'حذاء جري خفيف الوزن', dfr:'Chaussures de course légères', den:'Lightweight running shoes', price:4999, compare:5999, cat:2, stock:35, feat:1 },
+      { ar:'طقم طبخ', fr:'Set de cuisine', en:'Cookware Set', slug:'set-cuisine', dar:'طقم طبخ احترافي 10 قطع', dfr:'Set de cuisine professionnel 10 pièces', den:'10-piece professional cookware set', price:8999, compare:11999, cat:3, stock:20, feat:1 },
+      { ar:'حقيبة ظهر', fr:'Sac à dos', en:'Backpack', slug:'sac-a-dos', dar:'حقيبة ظهر متينة ومريحة', dfr:'Sac à dos durable et confortable', den:'Durable and comfortable backpack', price:2999, compare:null, cat:4, stock:60, feat:0 },
+      { ar:'كريم ترطيب', fr:'Crème hydratante', en:'Moisturizing Cream', slug:'creme-hydratante', dar:'كريم ترطيب طبيعي للبشرة', dfr:'Crème hydratante naturelle', den:'Natural moisturizing cream', price:1299, compare:1799, cat:5, stock:80, feat:0 },
+    ];
+    products.forEach(p => insProd.run(p.ar, p.fr, p.en, p.slug, p.dar, p.dfr, p.den, p.price, p.compare, p.cat, p.stock, p.feat, 'https://picsum.photos/seed/' + p.slug + '/600/600'));
+  }
 }
 
 function runSqliteMigrations(db) {
