@@ -1,18 +1,15 @@
 const path = require('path');
 
 let db;
+let pgInitPromise = null;
 
 function getDb() {
   if (db) return db;
 
   if (process.env.DATABASE_URL) {
     const pg = require('./pg');
-    const { initPgSchema } = require('./schema-pg');
     db = wrapPg(pg);
-    initPgSchema().catch(err => {
-      console.error('Failed to initialize PostgreSQL schema:', err);
-      process.exit(1);
-    });
+    ensurePgInit();
     return db;
   }
 
@@ -25,6 +22,16 @@ function getDb() {
   initSqliteSchema(sqlite, bcrypt);
   db = wrapSqlite(sqlite);
   return db;
+}
+
+function ensurePgInit() {
+  if (!pgInitPromise) {
+    pgInitPromise = require('./schema-pg').initPgSchema().catch(err => {
+      console.error('PostgreSQL schema init failed:', err.message);
+      pgInitPromise = null;
+    });
+  }
+  return pgInitPromise;
 }
 
 function toSqliteSql(sql) {
@@ -48,8 +55,15 @@ function wrapSqlite(sqlite) {
 
 function wrapPg(pg) {
   return {
-    prepare(sql) { return pg.prepare(sql); },
-    exec: (sql) => pg.exec(sql),
+    prepare(sql) {
+      const stmt = pg.prepare(sql);
+      return {
+        run: async (...params) => { await ensurePgInit(); return stmt.run(...params); },
+        get: async (...params) => { await ensurePgInit(); return stmt.get(...params); },
+        all: async (...params) => { await ensurePgInit(); return stmt.all(...params); },
+      };
+    },
+    exec: async (sql) => { await ensurePgInit(); return pg.exec(sql); },
   };
 }
 

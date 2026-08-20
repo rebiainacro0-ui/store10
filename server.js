@@ -58,6 +58,12 @@ app.use((req, res) => {
   res.status(404).render('404', { title: 'الصفحة غير موجودة', title_fr: 'Page non trouvée', title_en: 'Page Not Found' });
 });
 
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500);
+  res.render('404', { title: 'خطأ في الخادم', title_fr: 'Erreur serveur', title_en: 'Server Error' });
+});
+
 if (process.env.VERCEL !== '1') {
   app.listen(PORT, () => {
     console.log(`store10 running at http://localhost:${PORT}`);
