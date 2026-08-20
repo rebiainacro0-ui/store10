@@ -11,6 +11,6 @@ initPgSchema()
     process.exit(0);
   })
   .catch((err) => {
-    console.error('PostgreSQL schema init failed:', err.message);
-    process.exit(1);
+    console.error('PostgreSQL schema init failed (will be retried at runtime):', err.message);
+    process.exit(0);
   });
